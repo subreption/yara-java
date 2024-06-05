@@ -105,9 +105,17 @@ public class YaraCompilerImpl implements YaraCompiler {
                         continue;
                     }
 
+                    // Resolve the normalized path
+                    Path resolvedPath = unpackedFolder.resolve(ze.getName()).normalize();
+
+                    // Ensure the resolved path is within the unpacked folder
+                    if (!resolvedPath.startsWith(unpackedFolder)) {
+                        throw new IOException("Zip entry is outside of the target dir: " + ze.getName());
+                    }
+
                     // Read content
                     LOGGER.fine(String.format("Loading package entry: %s", ze.getName()));
-                    File ruleFile = new File(unpackedFolder + File.separator + ze.getName());
+                    File ruleFile = resolvedPath.toFile();
 
                     new File(ruleFile.getParent()).mkdirs();
 
@@ -128,8 +136,7 @@ public class YaraCompilerImpl implements YaraCompiler {
                 zis.close();
             }
 
-        }
-        catch(IOException ioe){
+        } catch(IOException ioe) {
             throw new RuntimeException(ioe);
         }
     }
