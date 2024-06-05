@@ -46,20 +46,28 @@ public class YaraCompilerImpl implements YaraCompiler {
             throw new YaraException(ErrorCode.INSUFFICIENT_MEMORY.getValue());
         }
 
+        Path rule = null;
         try {
             String ns = (namespace != null ? namespace : YaracExecutable.GLOBAL_NAMESPACE);
-            Path rule = File.createTempFile(UUID.randomUUID().toString(), "yara")
-                    .toPath();
+            rule = Files.createTempFile(UUID.randomUUID().toString(), ".yara");
 
-            Files.write(rule, content.getBytes(), StandardOpenOption.WRITE);
+            Files.write(rule, content.getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE);
             yarac.addRule(ns, rule);
-        }
-        catch (Throwable t) {
-            LOGGER.log(Level.WARNING, "Failed to add rule content {0}",
-                    t.getMessage());
-            throw new RuntimeException(t);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to add rule content: {0}", e.getMessage());
+            throw new RuntimeException(e);
+        } finally {
+            // Ensure the temporary file is deleted
+            if (rule != null) {
+                try {
+                    Files.deleteIfExists(rule);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to delete temporary rule file: {0}", e.getMessage());
+                }
+            }
         }
     }
+
 
     @Override
     public void addRulesFile(String filePath, String fileName, String namespace) {
