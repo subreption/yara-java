@@ -18,7 +18,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <hawtjni-version>1.14</hawtjni-version>
+        <hawtjni-version>1.8</hawtjni-version>
         <hawtjni-verbose>true</hawtjni-verbose>
         <easymock-version>3.2</easymock-version>
         <jni-with-crypto>-lcrypto</jni-with-crypto>
@@ -82,17 +82,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.14</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
             <version>1.7.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.14</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

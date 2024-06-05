@@ -2,9 +2,17 @@ package com.github.plusvic.yara.embedded;
 
 import com.github.plusvic.yara.*;
 import org.fusesource.hawtjni.runtime.Callback;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static com.github.plusvic.yara.Preconditions.checkArgument;
 import static com.github.plusvic.yara.Preconditions.checkState;

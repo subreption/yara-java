@@ -1,19 +1,20 @@
 package com.github.plusvic.yara.external;
 
 import com.github.plusvic.yara.*;
-
-import java.io.*;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import static com.github.plusvic.yara.Preconditions.checkArgument;
@@ -87,8 +88,8 @@ public class YaraCompilerImpl implements YaraCompiler {
 
             // Add the rule using yarac
             yarac.addRule(ns, rulePath);
-        } catch (IOException e) {
-            logger.warn(Level.WARNING, String.format("Failed to add rules file %s: %s", filePath, e.getMessage()));
+        } catch (Exception e) {
+            logger.warn("Failed to add rules file {}: {}", filePath, e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -190,7 +191,7 @@ public class YaraCompilerImpl implements YaraCompiler {
                 });
             }
             catch (IOException ioe) {
-                logger.warning(String.format("Failed to delete package %s: %s", p, ioe.getMessage()));
+                logger.warn(String.format("Failed to delete package %s: %s", p, ioe.getMessage()));
             }
         }
     }

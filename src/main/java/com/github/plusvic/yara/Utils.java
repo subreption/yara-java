@@ -2,6 +2,7 @@ package com.github.plusvic.yara;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.lang.Character;
 
 public class Utils {
     /**
@@ -40,7 +41,7 @@ public class Utils {
         int pos = 0, max = value.length();
 
         while (pos < max) {
-            Character current = value.charAt(pos);
+            Character current = (Character) value.charAt(pos);
 
             if (current == '\\' && (pos + 1) < max) {
                 switch (value.charAt(pos + 1)) {
