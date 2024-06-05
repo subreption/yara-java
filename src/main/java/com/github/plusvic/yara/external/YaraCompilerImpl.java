@@ -68,7 +68,6 @@ public class YaraCompilerImpl implements YaraCompiler {
         }
     }
 
-
     @Override
     public void addRulesFile(String filePath, String fileName, String namespace) {
         checkArgument(!Utils.isNullOrEmpty(filePath));
@@ -81,15 +80,16 @@ public class YaraCompilerImpl implements YaraCompiler {
 
         try {
             String ns = (namespace != null ? namespace : YaracExecutable.GLOBAL_NAMESPACE);
-            Path rule = File.createTempFile(UUID.randomUUID().toString(), "yara")
-                    .toPath();
+            Path rulePath = Paths.get(filePath);
 
-            yarac.addRule(ns, Paths.get(filePath));
-        }
-        catch (Throwable t) {
-            LOGGER.log(Level.WARNING, MessageFormat.format("Failed to add rules file {0}: {1}",
-                    filePath, t.getMessage()));
-            throw new RuntimeException(t);
+            // Log information about the rule being added
+            LOGGER.fine(String.format("Adding rule file: %s to namespace: %s", filePath, ns));
+
+            // Add the rule using yarac
+            yarac.addRule(ns, rulePath);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, String.format("Failed to add rules file %s: %s", filePath, e.getMessage()));
+            throw new RuntimeException(e);
         }
     }
 
