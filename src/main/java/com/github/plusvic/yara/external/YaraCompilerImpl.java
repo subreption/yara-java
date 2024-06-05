@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -19,7 +19,7 @@ import java.util.zip.ZipInputStream;
 import static com.github.plusvic.yara.Preconditions.checkArgument;
 
 public class YaraCompilerImpl implements YaraCompiler {
-    private static final Logger LOGGER = Logger.getLogger(YaraCompilerImpl.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(com.github.plusvic.yara.embedded.YaraCompilerImpl.class);
 
     private YaraCompilationCallback callback;
     private List<Path> packages = new ArrayList<>();
@@ -54,7 +54,7 @@ public class YaraCompilerImpl implements YaraCompiler {
             Files.write(rule, content.getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE);
             yarac.addRule(ns, rule);
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to add rule content: {0}", e.getMessage());
+            logger.warn("Failed to add rule content: {0}", e.getMessage());
             throw new RuntimeException(e);
         } finally {
             // Ensure the temporary file is deleted
@@ -62,7 +62,7 @@ public class YaraCompilerImpl implements YaraCompiler {
                 try {
                     Files.deleteIfExists(rule);
                 } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Failed to delete temporary rule file: {0}", e.getMessage());
+                    logger.warn("Failed to delete temporary rule file: {0}", e.getMessage());
                 }
             }
         }
@@ -83,12 +83,12 @@ public class YaraCompilerImpl implements YaraCompiler {
             Path rulePath = Paths.get(filePath);
 
             // Log information about the rule being added
-            LOGGER.fine(String.format("Adding rule file: %s to namespace: %s", filePath, ns));
+            logger.debug(String.format("Adding rule file: %s to namespace: %s", filePath, ns));
 
             // Add the rule using yarac
             yarac.addRule(ns, rulePath);
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING, String.format("Failed to add rules file %s: %s", filePath, e.getMessage()));
+            logger.warn(Level.WARNING, String.format("Failed to add rules file %s: %s", filePath, e.getMessage()));
             throw new RuntimeException(e);
         }
     }
@@ -98,7 +98,7 @@ public class YaraCompilerImpl implements YaraCompiler {
         checkArgument(!Utils.isNullOrEmpty(packagePath));
         checkArgument(Files.exists(Paths.get(packagePath)));
 
-        LOGGER.fine(String.format("Loading package: %s", packagePath));
+        logger.debug(String.format("Loading package: %s", packagePath));
 
         try {
             Path unpackedFolder = Files.createTempDirectory(UUID.randomUUID().toString());
@@ -122,7 +122,7 @@ public class YaraCompilerImpl implements YaraCompiler {
                     }
 
                     // Read content
-                    LOGGER.fine(String.format("Loading package entry: %s", ze.getName()));
+                    logger.debug(String.format("Loading package entry: %s", ze.getName()));
                     File ruleFile = resolvedPath.toFile();
 
                     new File(ruleFile.getParent()).mkdirs();
@@ -190,7 +190,7 @@ public class YaraCompilerImpl implements YaraCompiler {
                 });
             }
             catch (IOException ioe) {
-                LOGGER.warning(String.format("Failed to delete package %s: %s", p, ioe.getMessage()));
+                logger.warning(String.format("Failed to delete package %s: %s", p, ioe.getMessage()));
             }
         }
     }

@@ -10,8 +10,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
 
@@ -98,8 +98,7 @@ public class YaraCompilerTest {
             @Override
             public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
                 called.set(true);
-                LOGGER.log(Level.INFO, String.format("Compilation failed in %s at %d: %s",
-                        fileName, lineNumber, message));
+                logger.info(String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
             }
         };
 
@@ -227,8 +226,7 @@ public class YaraCompilerTest {
             @Override
             public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
                 called.set(true);
-                LOGGER.log(Level.INFO, String.format("Compilation failed in %s at %d: %s",
-                        fileName, lineNumber, message));
+                logger.info(Level.INFO, String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
             }
         };
 

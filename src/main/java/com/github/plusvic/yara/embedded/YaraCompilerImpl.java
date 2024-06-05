@@ -3,17 +3,8 @@ package com.github.plusvic.yara.embedded;
 import com.github.plusvic.yara.*;
 import org.fusesource.hawtjni.runtime.Callback;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Enumeration;
-import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.github.plusvic.yara.Preconditions.checkArgument;
 import static com.github.plusvic.yara.Preconditions.checkState;
@@ -22,7 +13,8 @@ import static com.github.plusvic.yara.Preconditions.checkState;
  * Yara compiler
  */
 public class YaraCompilerImpl implements YaraCompiler {
-    private static final Logger LOGGER = Logger.getLogger(YaraCompilerImpl.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(com.github.plusvic.yara.embedded.YaraCompilerImpl.class);
+
 
     /**
      * Native compilation callback wrapper
@@ -132,7 +124,7 @@ public class YaraCompilerImpl implements YaraCompiler {
         checkArgument(!Utils.isNullOrEmpty(packagePath));
         checkArgument(Files.exists(Paths.get(packagePath)));
 
-        LOGGER.fine(String.format("Loading package: %s", packagePath));
+        logger.debug("Loading package: %s", packagePath);
 
         try (ZipFile zf = new ZipFile(packagePath)) {
 
@@ -146,7 +138,7 @@ public class YaraCompilerImpl implements YaraCompiler {
                 }
 
                 // Read content
-                LOGGER.fine(String.format("Loading package entry: %s", entry.getName()));
+                logger.debug(String.format("Loading package entry: %s", entry.getName()));
                 StringBuilder content = new StringBuilder();
 
                 try (BufferedReader bsr = new BufferedReader(new InputStreamReader(zf.getInputStream(entry)))) {
