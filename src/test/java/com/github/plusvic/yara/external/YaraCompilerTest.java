@@ -10,8 +10,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -92,10 +92,12 @@ public class YaraCompilerTest {
     @Test
     public void testAddRulesContentFails() throws Exception {
         final AtomicBoolean called = new AtomicBoolean();
-        YaraCompilationCallback callback = (errorLevel, fileName, lineNumber, message) -> {
-            called.set(true);
-            LOGGER.log(Level.INFO, String.format("Compilation failed in %s at %d: %s",
-                    fileName, lineNumber, message));
+        YaraCompilationCallback callback = new YaraCompilationCallback() {
+            @Override
+            public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
+                called.set(true);
+                logger.info(String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
+            }
         };
 
         try (YaraCompiler compiler = new YaraCompilerImpl()) {
@@ -191,10 +193,12 @@ public class YaraCompilerTest {
     @Test
     public void testAddRulePackageFails() throws Exception {
         final AtomicBoolean called = new AtomicBoolean();
-        YaraCompilationCallback callback = (errorLevel, fileName, lineNumber, message) -> {
-            called.set(true);
-            LOGGER.log(Level.INFO, String.format("Compilation failed in %s at %d: %s",
-                    fileName, lineNumber, message));
+        YaraCompilationCallback callback = new YaraCompilationCallback() {
+            @Override
+            public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
+                called.set(true);
+                logger.info(Level.INFO, String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
+            }
         };
 
         // Write test file

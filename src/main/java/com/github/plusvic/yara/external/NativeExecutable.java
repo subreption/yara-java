@@ -1,5 +1,7 @@
 package com.github.plusvic.yara.external;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.fusesource.hawtjni.runtime.Library;
 
 import java.io.File;
@@ -10,16 +12,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
-import java.text.MessageFormat;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Native executable dependency
  */
 public class NativeExecutable {
-    private static final Logger LOGGER = Logger.getLogger(NativeExecutable.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(NativeExecutable.class);
     private static final Set<PosixFilePermission> EXECUTABLE_PERMISSIONS = new HashSet<>();
 
     static {
@@ -98,8 +97,7 @@ public class NativeExecutable {
                 return tempPath;
             }
         } catch (IOException ioe) {
-            LOGGER.log(Level.WARNING, MessageFormat.format("Failed to write executable to {0}: {1}",
-                    localPath, ioe.toString()));
+            logger.warn("Failed to write executable to {0}: {1}", localPath, ioe.toString());
         }
 
         return null;

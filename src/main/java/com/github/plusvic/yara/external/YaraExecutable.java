@@ -11,13 +11,13 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.github.plusvic.yara.Preconditions.checkArgument;
 
 public class YaraExecutable {
-    private static final Logger LOGGER = Logger.getLogger(YaraExecutable.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(YaraExecutable.class);
 
     private int timeout = 60;
     private boolean negate = false;
@@ -133,7 +133,7 @@ public class YaraExecutable {
             return true;
         }
         catch (Throwable t) {
-            LOGGER.log(Level.WARNING, "Failed to match rules: {0}", t.getMessage());
+            logger.warn("Failed to match rules: {0}", t.getMessage());
             throw t;
         }
     }
@@ -173,12 +173,12 @@ public class YaraExecutable {
             return true;
         }
         catch (Throwable t) {
-            LOGGER.log(Level.WARNING, "Failed to match rules: {0}", t.getMessage());
+            logger.warn("Failed to match rules: {0}", t.getMessage());
             throw t;
         } finally {
             if (ftmp != null) {
                 if (! ftmp.delete()) {
-                    LOGGER.log(Level.WARNING, "Failed to delete tmp file {0}", ftmp);
+                    logger.warn("Failed to delete tmp file {0}", ftmp);
                 }
             }
         }

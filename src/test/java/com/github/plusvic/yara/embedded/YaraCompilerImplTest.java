@@ -17,8 +17,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -106,9 +106,12 @@ public class YaraCompilerImplTest {
     @Test
     public void testAddRulesContentFails() throws Exception {
         final AtomicBoolean called = new AtomicBoolean();
-        YaraCompilationCallback callback = (errorLevel, fileName, lineNumber, message) -> {
-            called.set(true);
-            LOGGER.log(Level.INFO, String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
+        YaraCompilationCallback callback = new YaraCompilationCallback() {
+            @Override
+            public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
+                called.set(true);
+                logger.info("Compilation failed in %s at %d: %s", fileName, lineNumber, message);
+            }
         };
 
         try (YaraCompiler compiler = yara.createCompiler()) {
@@ -162,8 +165,7 @@ public class YaraCompilerImplTest {
             @Override
             public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
                 called.set(true);
-                LOGGER.log(Level.INFO, String.format("Compilation failed in %s at %d: %s",
-                        fileName, lineNumber, message));
+                logger.info("Compilation failed in %s at %d: %s", fileName, lineNumber, message);
             }
         };
 
@@ -209,8 +211,7 @@ public class YaraCompilerImplTest {
             @Override
             public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
                 called.set(true);
-                LOGGER.log(Level.INFO, String.format("Compilation failed in %s at %d: %s",
-                        fileName, lineNumber, message));
+                logger.info("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
             }
         };
 

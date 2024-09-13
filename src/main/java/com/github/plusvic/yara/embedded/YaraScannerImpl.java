@@ -7,8 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.github.plusvic.yara.Preconditions.checkArgument;
 
@@ -18,7 +18,8 @@ import static com.github.plusvic.yara.Preconditions.checkArgument;
  * Time: 10:06 AM
  */
 public class YaraScannerImpl implements YaraScanner {
-    private static final Logger LOGGER = Logger.getLogger(YaraScannerImpl.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(com.github.plusvic.yara.embedded.YaraCompilerImpl.class);
+
 
     private static final long CALLBACK_CONTINUE = 0;
     private static final long CALLBACK_ABORT = 1;
@@ -194,14 +195,12 @@ public class YaraScannerImpl implements YaraScanner {
 
                 if (moduleArgs.containsKey(name)) {
                     if (module.loadData(moduleArgs.get(name))) {
-                        LOGGER.log(Level.FINE, MessageFormat.format("Loaded module {0} data from {1}",
-                                name, moduleArgs.get(name)));
+                        logger.debug("Loaded module {0} data from {1}", name, moduleArgs.get(name));
 
                         loadedModules.add(module);
                     }
                     else {
-                        LOGGER.log(Level.WARNING, MessageFormat.format("Failed to load module {0} data from {1}",
-                                name, moduleArgs.get(name)));
+                        logger.warn("Failed to load module {0} data from {1}", name, moduleArgs.get(name));
                     }
                 }
             };
@@ -216,7 +215,7 @@ public class YaraScannerImpl implements YaraScanner {
         try {
             final long callBackAddress = callback.getAddress();
             if(callBackAddress == 0) {
-              throw new IllegalStateException("Too many concurent callbacks, unable to create.");
+              throw new IllegalStateException("Too many concurrent callbacks, unable to create.");
             }
             int ret = library.rulesScanFile(peer, file.getAbsolutePath(), SCAN_FLAGS_NO_TRYCATCH, callBackAddress, 0, timeout);
             if (!ErrorCode.isSuccess(ret)) {
@@ -267,14 +266,12 @@ public class YaraScannerImpl implements YaraScanner {
 
                 if (moduleArgs.containsKey(name)) {
                     if (module.loadData(moduleArgs.get(name))) {
-                        LOGGER.log(Level.FINE, MessageFormat.format("Loaded module {0} data from {1}",
-                                name, moduleArgs.get(name)));
+                        logger.debug("Loaded module {0} data from {1}", name, moduleArgs.get(name));
 
                         loadedModules.add(module);
                     }
                     else {
-                        LOGGER.log(Level.WARNING, MessageFormat.format("Failed to load module {0} data from {1}",
-                                name, moduleArgs.get(name)));
+                        logger.warn("Failed to load module {0} data from {1}", name, moduleArgs.get(name));
                     }
                 }
             };

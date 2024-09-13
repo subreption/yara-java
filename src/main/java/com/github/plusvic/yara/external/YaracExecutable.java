@@ -15,8 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.github.plusvic.yara.Preconditions.checkArgument;
 
@@ -26,7 +26,7 @@ import static com.github.plusvic.yara.Preconditions.checkArgument;
  * Time: 9:50 AM
  */
 public class YaracExecutable {
-    private static final Logger LOGGER = Logger.getLogger(YaracExecutable.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(YaracExecutable.class);
 
     public static final String GLOBAL_NAMESPACE = "";
 
@@ -108,13 +108,13 @@ public class YaracExecutable {
                     processError(callback, line);
                 }
                 while (null != (line = pout.readLine())) {
-                    LOGGER.log(Level.FINE, line);
+                    logger.debug(line);
                 }
             }
 
             return output;
         } catch (Throwable t) {
-            LOGGER.log(Level.WARNING, "Failed to compile rules: {0}", t.getMessage());
+            logger.warn("Failed to compile rules: {0}", t.getMessage());
             throw t;
         }
     }
