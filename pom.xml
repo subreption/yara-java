@@ -18,7 +18,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <hawtjni-version>1.8</hawtjni-version>
+        <hawtjni-version>1.17</hawtjni-version>
         <hawtjni-verbose>true</hawtjni-verbose>
         <mockito-version>4.2.0</mockito-version>
         <jni-with-crypto>-lcrypto</jni-with-crypto>
@@ -64,41 +64,6 @@
             <version>1.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.14</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.14</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.14</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.14</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -106,8 +71,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.1</version>
+                <version>3.13.0</version>
                 <configuration>
+                    <parameters>true</parameters>
                     <source>1.8</source>
                     <target>1.8</target>
                     <!--
@@ -123,7 +89,7 @@
             </plugin>
             <plugin>
                 <groupId>org.fusesource.hawtjni</groupId>
-                <artifactId>maven-hawtjni-plugin</artifactId>
+                <artifactId>hawtjni-maven-plugin</artifactId>
                 <version>${hawtjni-version}</version>
                 <executions>
                     <execution>
@@ -143,7 +109,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.8</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>package-native</id>
@@ -156,9 +122,9 @@
                                 <dirset dir="${project.build.directory}/generated-sources/hawtjni/lib/META-INF/native/" id="platform">
                                     <include name="*" />
                                 </dirset>
-                                <copy file="${project.basedir}/../yara"
+                                <copy file="${env.YARA_HOME}/yara"
                                       tofile="${project.build.directory}/generated-sources/hawtjni/lib/META-INF/native/${toString:platform}/yara"/>
-                                <copy file="${project.basedir}/../yarac"
+                                <copy file="${env.YARA_HOME}/yarac"
                                       tofile="${project.build.directory}/generated-sources/hawtjni/lib/META-INF/native/${toString:platform}/yarac"/>
                                 <jar destfile="${project.build.directory}/${project.artifactId}-${project.version}-${toString:platform}.jar"
                                      basedir="${project.build.directory}/generated-sources/hawtjni/lib/"
@@ -178,9 +144,9 @@
                                 <dirset dir="${project.build.directory}/generated-sources/hawtjni/lib/META-INF/native/" id="platform">
                                     <include name="*" />
                                 </dirset>
-                                <copy file="${project.basedir}/../yara"
+                                <copy file="${env.YARA_HOME}/yara"
                                       tofile="${project.build.directory}/test-classes/META-INF/native/${toString:platform}/yara"/>
-                                <copy file="${project.basedir}/../yarac"
+                                <copy file="${env.YARA_HOME}/yarac"
                                       tofile="${project.build.directory}/test-classes/META-INF/native/${toString:platform}/yarac"/>
                             </target>
                         </configuration>
@@ -231,6 +197,7 @@
                     <plugin>
                         <groupId>org.fusesource.hawtjni</groupId>
                         <artifactId>maven-hawtjni-plugin</artifactId>
+                        <version>${hawtjni-version}</version>
                         <configuration>
                             <configureArgs>
                                 <arg>LDFLAGS=${jni-with-crypto}</arg>

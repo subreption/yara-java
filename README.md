@@ -26,6 +26,7 @@ git checkout tags/v4.0.2
 ./bootstrap.sh
 ./configure --enable-shared --without-crypto CFLAGS=-fPIC
 make
+export YARA_HOME=/path/to/compiled/yara
 ```
 
 ### Get and build yara-java
