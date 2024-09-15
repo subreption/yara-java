@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 @NotThreadSafe
 public class YaraCompilerImplTest {
-    private final static Logger LOGGER = Logger.getLogger(YaraCompilerImplTest.class.getName());
+    private final static Logger logger = LoggerFactory.getLogger(YaraCompilerImplTest.class.getName());
 
     private static final String YARA_RULE_HELLO = "rule HelloWorld\n"+
             "{\n"+
@@ -211,7 +211,7 @@ public class YaraCompilerImplTest {
             @Override
             public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
                 called.set(true);
-                logger.info("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
+                logger.info("Compilation failed in %s at %d: %s", fileName, lineNumber, message);
             }
         };
 

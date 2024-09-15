@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * Time: 6:12 PM
  */
 public class YaraCompilerTest {
-    private final static Logger LOGGER = Logger.getLogger(YaraCompilerTest.class.getName());
+    private final static Logger logger = LoggerFactory.getLogger(YaraCompilerTest.class.getName());
 
     private static final String YARA_RULE_HELLO = "rule HelloWorld\n"+
             "{\n"+
@@ -197,7 +197,7 @@ public class YaraCompilerTest {
             @Override
             public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
                 called.set(true);
-                logger.info(Level.INFO, String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
+                logger.info(String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
             }
         };
 
