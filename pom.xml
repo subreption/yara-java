@@ -18,7 +18,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <hawtjni-version>1.17</hawtjni-version>
+        <hawtjni-version>1.18</hawtjni-version>
         <hawtjni-verbose>true</hawtjni-verbose>
         <mockito-version>4.2.0</mockito-version>
         <jni-with-crypto>-lcrypto</jni-with-crypto>
