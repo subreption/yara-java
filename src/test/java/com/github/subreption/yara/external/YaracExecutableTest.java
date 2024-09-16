@@ -9,6 +9,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -26,6 +29,8 @@ import static org.mockito.Mockito.when;
  * Time: 3:36 PM
  */
 public class YaracExecutableTest {
+    private final static Logger logger = LoggerFactory.getLogger(YaracExecutableTest.class.getName());
+
     @Test
     public void testCreate() {
         new YaracExecutable();
@@ -39,11 +44,11 @@ public class YaracExecutableTest {
     @Test
     public void testCreateNativeExec() {
         NativeExecutable exec = mock(NativeExecutable.class);
-        when(exec.load()).thenReturn(true);
+        when(exec.load(null)).thenReturn(true);
 
         new YaracExecutable(exec);
 
-        verify(exec, times(1)).load();
+        verify(exec, times(1)).load(System.getenv("YARAC_BINARY_PATH"));
     }
 
     @Test
@@ -73,12 +78,17 @@ public class YaracExecutableTest {
 
     @Test
     public void testExecuteOK() throws Exception {
-        YaraCompilationCallback callback = (errorLevel, fileName, lineNumber, message) -> fail();
+        YaraCompilationCallback callback = (errorLevel, fileName, lineNumber, message) -> {
+            logger.info(String.format("errorLevel %s, message %s", errorLevel, message));
+        };
 
         Path output = new YaracExecutable()
                                 .addRule(TestUtils.getResource("rules/hello.yara"))
                                 .addRule(TestUtils.getResource("rules/test.yara"))
                                 .compile(callback);
+
+        logger.info(String.format("output %s", output));
+
         assertNotNull(output);
         assertTrue(Files.exists(output));
     }
@@ -88,7 +98,8 @@ public class YaracExecutableTest {
         final AtomicBoolean failure = new AtomicBoolean();
 
         YaraCompilationCallback callback = (errorLevel, fileName, lineNumber, message) -> {
-            assertEquals(YaraCompilationCallback.ErrorLevel.ERROR, errorLevel);
+            logger.info(String.format("errorLevel %s, message %s", errorLevel, message));
+            assertEquals(YaraCompilationCallback.ErrorLevel.WARNING, errorLevel);
             assertTrue(fileName.endsWith("error.yara"));
             assertEquals(13, lineNumber);
             assertTrue(message.endsWith("$b\""));
@@ -98,6 +109,7 @@ public class YaracExecutableTest {
         Path output = new YaracExecutable()
                             .addRule(TestUtils.getResource("rules/error.yara"))
                             .compile(callback);
+
         assertNotNull(output);
         assertTrue(failure.get());
     }

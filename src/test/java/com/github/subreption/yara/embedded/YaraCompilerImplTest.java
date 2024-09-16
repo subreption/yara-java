@@ -1,29 +1,31 @@
 package com.github.subreption.yara.embedded;
 
+import java.io.File;
+import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.security.SecureRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.subreption.yara.TestUtils;
 import com.github.subreption.yara.YaraCompilationCallback;
 import com.github.subreption.yara.YaraCompiler;
 import com.github.subreption.yara.YaraException;
 import com.github.subreption.yara.YaraScanner;
+
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * User: pba
@@ -64,13 +66,23 @@ public class YaraCompilerImplTest {
     private YaraImpl yara;
 
     @BeforeEach
-    public void setup() {
-        System.out.println("assign yara");
+    public void setup()
+    {
+        ProcessHandle currentProcess = ProcessHandle.current();
+
+        logger.debug(String.format("Creating instance of Yara library (native), pid %d, thread %s.",
+            currentProcess.pid(), Thread.currentThread().getName()));
+
         this.yara = new YaraImpl();
     }
 
     @AfterEach
     public void teardown() throws Exception {
+        ProcessHandle currentProcess = ProcessHandle.current();
+
+        logger.debug(String.format("Closing instance of Yara library (native), pid %d, thread %s.",
+            currentProcess.pid(), Thread.currentThread().getName()));
+
         this.yara.close();
     }
 
@@ -110,7 +122,7 @@ public class YaraCompilerImplTest {
             @Override
             public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
                 called.set(true);
-                logger.info("Compilation failed in %s at %d: %s", fileName, lineNumber, message);
+                logger.debug(String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
             }
         };
 
@@ -165,7 +177,7 @@ public class YaraCompilerImplTest {
             @Override
             public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
                 called.set(true);
-                logger.info("Compilation failed in %s at %d: %s", fileName, lineNumber, message);
+                logger.debug(String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
             }
         };
 
@@ -177,8 +189,7 @@ public class YaraCompilerImplTest {
             fail();
         }
         catch(YaraException e) {
-            System.out.println(e.toString());
-            logger.info("YaraException %s", e.toString());
+            logger.debug(String.format("YaraException %s", e.toString()));
         }
 
         assertTrue(called.get());
@@ -189,7 +200,7 @@ public class YaraCompilerImplTest {
         YaraCompilationCallback callback = new YaraCompilationCallback() {
             @Override
             public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
-                logger.info("Compilation failed in %s at %d: %s", fileName, lineNumber, message);
+                logger.debug(String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
                 fail();
             }
         };
@@ -214,7 +225,7 @@ public class YaraCompilerImplTest {
             @Override
             public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
                 called.set(true);
-                logger.info("Compilation failed in %s at %d: %s", fileName, lineNumber, message);
+                logger.debug(String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
             }
         };
 
@@ -230,6 +241,11 @@ public class YaraCompilerImplTest {
             fail();
         }
         catch(YaraException e) {
+            logger.debug(String.format("YaraException on testAddRulesFileFails: %s", e.getMessage()));
+        } finally {
+            if (rule != null) {
+                Files.deleteIfExists(rule);
+            }
         }
 
         assertTrue(called.get());

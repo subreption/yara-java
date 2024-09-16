@@ -1,20 +1,24 @@
 package com.github.subreption.yara.external;
 
-import com.github.subreption.yara.Utils;
-import com.github.subreption.yara.YaraException;
-import com.github.subreption.yara.YaraScanCallback;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.github.subreption.yara.Preconditions.checkArgument;
+import com.github.subreption.yara.Utils;
+import com.github.subreption.yara.YaraException;
+import com.github.subreption.yara.YaraScanCallback;
 
 public class YaraExecutable {
     private static final Logger logger = LoggerFactory.getLogger(YaraExecutable.class);
@@ -134,7 +138,7 @@ public class YaraExecutable {
             return true;
         }
         catch (Throwable t) {
-            logger.warn("Failed to match rules: {0}", t.getMessage());
+            logger.warn(String.format("Failed to match rules: %s", t.getMessage()));
             throw t;
         }
     }
@@ -174,12 +178,12 @@ public class YaraExecutable {
             return true;
         }
         catch (Throwable t) {
-            logger.warn("Failed to match rules: {0}", t.getMessage());
+            logger.warn(String.format("Failed to match rules: %s", t.getMessage()));
             throw t;
         } finally {
             if (ftmp != null) {
                 if (! ftmp.delete()) {
-                    logger.warn("Failed to delete tmp file {0}", ftmp);
+                    logger.warn(String.format("Failed to delete tmp file %s", ftmp));
                 }
             }
         }

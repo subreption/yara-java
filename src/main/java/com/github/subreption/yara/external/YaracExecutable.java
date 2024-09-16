@@ -1,8 +1,5 @@
 package com.github.subreption.yara.external;
 
-import com.github.subreption.yara.Utils;
-import com.github.subreption.yara.YaraCompilationCallback;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -15,10 +12,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.github.subreption.yara.Preconditions.checkArgument;
+import com.github.subreption.yara.Utils;
+import com.github.subreption.yara.YaraCompilationCallback;
 
 /**
  * User: pba
@@ -63,6 +63,7 @@ public class YaracExecutable {
             rules.put(namespace, paths);
         }
 
+        logger.debug(String.format("Adding rule from %s", file));
         paths.add(file);
 
         return this;
@@ -93,6 +94,7 @@ public class YaracExecutable {
 
     public Path compile(YaraCompilationCallback callback) throws Exception {
         if (callback == null) {
+            logger.error("compiler called with no callback defined!");
             throw new IllegalArgumentException();
         }
 
@@ -115,7 +117,7 @@ public class YaracExecutable {
 
             return output;
         } catch (Throwable t) {
-            logger.warn("Failed to compile rules: {0}", t.getMessage());
+            logger.warn(String.format("Failed to compile rules: %s", t.toString()));
             throw t;
         }
     }
@@ -177,6 +179,8 @@ public class YaracExecutable {
                     break;
             }
         }
+
+        logger.warn(String.format("Compilation failed at line %d in %s: %s", lineNumber, filename, temp.toString().trim()));
 
         callback.onError(level, filename, lineNumber, temp.toString().trim());
     }

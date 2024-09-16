@@ -132,7 +132,7 @@ public class YaraCompilerImpl implements YaraCompiler {
         checkArgument(!Utils.isNullOrEmpty(packagePath));
         checkArgument(Files.exists(Paths.get(packagePath)));
 
-        logger.debug("Loading package: %s", packagePath);
+        logger.info("Loading package: " + packagePath);
 
         try (ZipFile zf = new ZipFile(packagePath)) {
 
@@ -146,7 +146,7 @@ public class YaraCompilerImpl implements YaraCompiler {
                 }
 
                 // Read content
-                logger.debug(String.format("Loading package entry: %s", entry.getName()));
+                logger.debug("Loading package entry: " + entry.getName());
                 StringBuilder content = new StringBuilder();
 
                 try (BufferedReader bsr = new BufferedReader(new InputStreamReader(zf.getInputStream(entry)))) {

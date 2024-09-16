@@ -1,15 +1,16 @@
 package com.github.subreption.yara.external;
 
-import com.github.subreption.yara.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,16 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.github.subreption.yara.ErrorCode;
 import static com.github.subreption.yara.Preconditions.checkArgument;
+import com.github.subreption.yara.Utils;
+import com.github.subreption.yara.YaraCompilationCallback;
+import com.github.subreption.yara.YaraCompiler;
+import com.github.subreption.yara.YaraException;
+import com.github.subreption.yara.YaraScanner;
 
 public class YaraCompilerImpl implements YaraCompiler {
     private static final Logger logger = LoggerFactory.getLogger(com.github.subreption.yara.embedded.YaraCompilerImpl.class);
@@ -53,9 +63,14 @@ public class YaraCompilerImpl implements YaraCompiler {
             rule = Files.createTempFile(UUID.randomUUID().toString(), ".yara");
 
             Files.write(rule, content.getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE);
+            logger.debug(String.format("calling addRule: %s", rule.toString()));
             yarac.addRule(ns, rule);
         } catch (IOException e) {
-            logger.warn("Failed to add rule content: {0}", e.getMessage());
+            logger.warn(String.format("IOException while adding rule content: %s", e.getMessage()));
+            deleteImmediately = true;
+            throw new RuntimeException(e);
+        } catch (YaraException e) {
+            logger.warn(String.format("YaraException while adding rule content: %s", e.getMessage()));
             throw new RuntimeException(e);
         } finally {
             // Ensure the temporary file is deleted
@@ -76,6 +91,7 @@ public class YaraCompilerImpl implements YaraCompiler {
 
         if (rules != null) {
             // Mimic embedded behavior
+            logger.error("rules is null");
             throw new YaraException(ErrorCode.INSUFFICIENT_MEMORY.getValue());
         }
 
@@ -89,7 +105,7 @@ public class YaraCompilerImpl implements YaraCompiler {
             // Add the rule using yarac
             yarac.addRule(ns, rulePath);
         } catch (Exception e) {
-            logger.warn("Failed to add rules file {}: {}", filePath, e.getMessage());
+            logger.warn(String.format("Failed to add rules file %s: %s", filePath, e.getMessage()));
             throw new RuntimeException(e);
         }
     }
@@ -99,7 +115,7 @@ public class YaraCompilerImpl implements YaraCompiler {
         checkArgument(!Utils.isNullOrEmpty(packagePath));
         checkArgument(Files.exists(Paths.get(packagePath)));
 
-        logger.debug(String.format("Loading package: %s", packagePath));
+        logger.info("Loading package: " + packagePath);
 
         try {
             Path unpackedFolder = Files.createTempDirectory(UUID.randomUUID().toString());
@@ -117,8 +133,10 @@ public class YaraCompilerImpl implements YaraCompiler {
                     // Resolve the normalized path
                     Path resolvedPath = unpackedFolder.resolve(ze.getName()).normalize();
 
+
                     // Ensure the resolved path is within the unpacked folder
                     if (!resolvedPath.startsWith(unpackedFolder)) {
+                        logger.error("Zip entry is outside of the target dir: " + ze.getName());
                         throw new IOException("Zip entry is outside of the target dir: " + ze.getName());
                     }
 
@@ -136,6 +154,7 @@ public class YaraCompilerImpl implements YaraCompiler {
                             fos.write(buffer, 0, len);
                         }
                     }
+
 
                     // Load file
                     addRulesFile(ruleFile.toString(), ze.getName(), namespace);

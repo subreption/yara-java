@@ -1,17 +1,13 @@
 package com.github.subreption.yara.external;
 
-import com.github.subreption.yara.*;
-import org.junit.jupiter.api.Test;
-
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -19,6 +15,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.github.subreption.yara.TestUtils;
+import com.github.subreption.yara.YaraCompilationCallback;
+import com.github.subreption.yara.YaraCompiler;
+import com.github.subreption.yara.YaraException;
+import com.github.subreption.yara.YaraScanner;
 
 /**
  * User: pba
@@ -197,7 +202,7 @@ public class YaraCompilerTest {
             @Override
             public void onError(ErrorLevel errorLevel, String fileName, long lineNumber, String message) {
                 called.set(true);
-                logger.info(String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
+                //logger.warn(String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
             }
         };
 
@@ -240,14 +245,21 @@ public class YaraCompilerTest {
 
     @Test
     public void testAddRulesAfterScannerCreate() throws Exception {
-        YaraCompilationCallback callback = (errorLevel, fileName, lineNumber, message) -> fail();
+        final AtomicBoolean called = new AtomicBoolean();
+        YaraCompilationCallback callback = (errorLevel, fileName, lineNumber, message) -> {
+            called.set(true);
+            logger.warn(String.format("testAddRulesAfterScannerCreate: compilation failed in %s at %d: %s", fileName, lineNumber, message));
+        };
 
         try (YaraCompiler compiler = new YaraCompilerImpl()) {
             compiler.setCallback(callback);
             compiler.addRulesContent(YARA_RULE_HELLO, null);
 
+            logger.info("testAddRulesAfterScannerCreate: added YARA_RULE_HELLO, creating scanner.");
+
             // Get scanner
             try (YaraScanner scanner = compiler.createScanner()) {
+                logger.info(String.format("scanner = %s", scanner.toString()));
                 assertNotNull(scanner);
             }
 
@@ -257,6 +269,7 @@ public class YaraCompilerTest {
                 fail();
             }
             catch (YaraException e) {
+                logger.warn(String.format("testAddRulesAfterScannerCreate: got YaraException, %s", e.toString()));
                 assertEquals(1L, e.getNativeCode());
             }
         }
