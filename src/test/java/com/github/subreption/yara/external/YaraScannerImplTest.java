@@ -71,6 +71,15 @@ public class YaraScannerImplTest {
             "}";
 
 
+    private String randomTestFilename(String prefix) {
+        SecureRandom random = new SecureRandom();
+
+        // Generate a random filename with high entropy
+        String randomFileName = new BigInteger(130, random).toString(32) + ".yara";
+
+        return String.format("%s_%s", prefix, randomFileName);
+    }
+
     @Test
     public void testCreateNoRules() {
         assertThrows(IllegalArgumentException.class, () -> new YaraScannerImpl(null));
@@ -110,7 +119,7 @@ public class YaraScannerImplTest {
     @Test
     public void testScanMatch() throws Exception {
         // Write test file
-        File temp = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
+        File temp = File.createTempFile(randomTestFilename("testScanMatch"), "tmp");
         Files.write(Paths.get(temp.getAbsolutePath()), "Hello world".getBytes(), StandardOpenOption.WRITE);
 
         //
@@ -139,7 +148,12 @@ public class YaraScannerImplTest {
             }
         }
 
-        logger.info(String.format("testScanMatch: scan finished, match=%d", match.get()));
+        try {
+            Files.deleteIfExists(Paths.get(temp.getAbsolutePath()));
+        } catch (IOException e) {
+            logger.error(String.format("Failed to delete temporary file: %s", e.getMessage()));
+        }
+
         assertTrue(match.get());
     }
 
@@ -149,7 +163,7 @@ public class YaraScannerImplTest {
             Negate and try matching on an UUID, we should have two matches
          */
         // Write test file
-        File temp = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
+        File temp = File.createTempFile(randomTestFilename("testScanNegateMatch"), ".tmp");
         Files.write(Paths.get(temp.getAbsolutePath()), UUID.randomUUID().toString().getBytes(),
                 StandardOpenOption.WRITE);
 
@@ -179,6 +193,12 @@ public class YaraScannerImplTest {
             }
         }
 
+        try {
+            Files.deleteIfExists(Paths.get(temp.getAbsolutePath()));
+        } catch (IOException e) {
+            logger.error(String.format("Failed to delete temporary file: %s", e.getMessage()));
+        }
+
         assertEquals(2, match.get());
     }
 
@@ -189,7 +209,7 @@ public class YaraScannerImplTest {
             we should have a single match
          */
         // Write test file
-        File temp = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
+        File temp = File.createTempFile(randomTestFilename("testScanNegateLimitMatch"), ".tmp");
         Files.write(Paths.get(temp.getAbsolutePath()), UUID.randomUUID().toString().getBytes(),
                 StandardOpenOption.WRITE);
 
@@ -220,13 +240,19 @@ public class YaraScannerImplTest {
             }
         }
 
+        try {
+            Files.deleteIfExists(Paths.get(temp.getAbsolutePath()));
+        } catch (IOException e) {
+            logger.error(String.format("Failed to delete temporary file: %s", e.getMessage()));
+        }
+
         assertEquals(2, match.get());
     }
 
     @Test
     public void testScanNoMatch() throws Exception {
         // Write test file
-        File temp = File.createTempFile(UUID.randomUUID().toString(), ".tmp");
+        File temp = File.createTempFile(randomTestFilename("testScanNoMatch"), ".tmp");
         Files.write(Paths.get(temp.getAbsolutePath()), "Hello 1231231world".getBytes(), StandardOpenOption.WRITE);
 
         //
@@ -249,13 +275,19 @@ public class YaraScannerImplTest {
             }
         }
 
+        try {
+            Files.deleteIfExists(Paths.get(temp.getAbsolutePath()));
+        } catch (IOException e) {
+            logger.error(String.format("Failed to delete temporary file: %s", e.getMessage()));
+        }
+
         assertFalse(match.get());
     }
 
     @Test
     public void testScanModule() throws Exception {
         // Write test file
-        File temp = File.createTempFile(UUID.randomUUID().toString(), ".tmp");        
+        File temp = File.createTempFile(randomTestFilename("testScanModule"), ".tmp");
         Files.write(Paths.get(temp.getAbsolutePath()), "Hello world".getBytes(), StandardOpenOption.WRITE);
 
         Map<String, String> moduleArgs = new HashMap<>();
@@ -285,7 +317,12 @@ public class YaraScannerImplTest {
             }
         }
 
-        System.out.println(String.format("testScanModule: match.get()=%d", match.get()));
+        try {
+            Files.deleteIfExists(Paths.get(temp.getAbsolutePath()));
+        } catch (IOException e) {
+            logger.error(String.format("Failed to delete temporary file: %s", e.getMessage()));
+        }
+
         assertTrue(match.get());
     }
 

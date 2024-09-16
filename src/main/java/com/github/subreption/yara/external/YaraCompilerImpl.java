@@ -35,10 +35,12 @@ public class YaraCompilerImpl implements YaraCompiler {
     private YaraCompilationCallback callback;
     private List<Path> packages = new ArrayList<>();
     private YaracExecutable yarac;
-    private Path   rules;
+    private Path rules;
+    private List<Path> tempFiles;
 
     public YaraCompilerImpl() {
         this.rules = null;
+        this.tempFiles = new ArrayList<>();
         this.yarac = new YaracExecutable();
     }
 
@@ -50,6 +52,8 @@ public class YaraCompilerImpl implements YaraCompiler {
 
     @Override
     public void addRulesContent(String content, String namespace) {
+        Boolean deleteImmediately = false;
+
         checkArgument(!Utils.isNullOrEmpty(content));
 
         if (rules != null) {
@@ -71,14 +75,22 @@ public class YaraCompilerImpl implements YaraCompiler {
             throw new RuntimeException(e);
         } catch (YaraException e) {
             logger.warn(String.format("YaraException while adding rule content: %s", e.getMessage()));
+            deleteImmediately = true;
             throw new RuntimeException(e);
         } finally {
             // Ensure the temporary file is deleted
             if (rule != null) {
-                try {
-                    Files.deleteIfExists(rule);
-                } catch (IOException e) {
-                    logger.warn("Failed to delete temporary rule file: {0}", e.getMessage());
+                if (deleteImmediately)
+                {
+                    try {
+                        logger.debug(String.format("Deleting %s", rule.toString()));
+                        Files.deleteIfExists(rule);
+                    } catch (IOException e) {
+                        logger.warn(String.format("Failed to delete temporary rule file: %s", e.getMessage()));
+                    }
+                } else {
+                    // Delay deletion on close()
+                    tempFiles.add(rule);
                 }
             }
         }
@@ -211,6 +223,18 @@ public class YaraCompilerImpl implements YaraCompiler {
             }
             catch (IOException ioe) {
                 logger.warn(String.format("Failed to delete package %s: %s", p, ioe.getMessage()));
+            }
+        }
+
+        // Iterate through the list of paths and delete files if they exist
+        for (Path path : tempFiles) {
+            try {
+                if (Files.exists(path)) {
+                    Files.delete(path);
+                    logger.debug(String.format("Deleted %s", path.toString()));
+                }
+            } catch (IOException e) {
+                logger.warn(String.format("Failed to delete %s: %s", path.toString(), e.getMessage()));
             }
         }
     }

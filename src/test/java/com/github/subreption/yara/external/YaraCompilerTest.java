@@ -167,6 +167,14 @@ public class YaraCompilerTest {
                 scanner.scan(temp);
             }
 
+            if (temp != null) {
+                try {
+                    Files.deleteIfExists(Paths.get(temp.getAbsolutePath()));
+                } catch (IOException e) {
+                    logger.error(String.format("Failed to delete temporary file: {0}", e.getMessage()));
+                }
+            }
+
             assertFalse(called.get());
         }
     }
@@ -224,6 +232,13 @@ public class YaraCompilerTest {
         }
         catch(YaraException e) {
         }
+        finally {
+            if (temp != null) {
+                if (! temp.delete()) {
+                    logger.warn(String.format("Failed to delete tmp file %s", temp));
+                }
+            }
+        }
 
         assertTrue(called.get());
     }
@@ -262,6 +277,13 @@ public class YaraCompilerTest {
                 logger.info(String.format("scanner = %s", scanner.toString()));
                 assertNotNull(scanner);
             }
+
+            if (called.get()) {
+                logger.warn(String.format("testAddRulesAfterScannerCreate: premature/unexpected failure, verify!"));
+                fail();
+            }
+
+            logger.info("testAddRulesAfterScannerCreate: adding NOOP rule, expecting failure");
 
             // Subsequent add rule should fail
             try {

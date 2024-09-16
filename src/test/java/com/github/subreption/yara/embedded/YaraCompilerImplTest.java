@@ -35,7 +35,6 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class YaraCompilerImplTest {
     private final static Logger logger = LoggerFactory.getLogger(YaraCompilerImplTest.class.getName());
-
     private static final String YARA_RULE_HELLO = "rule HelloWorld\n"+
             "{\n"+
             "\tstrings:\n"+
@@ -64,6 +63,15 @@ public class YaraCompilerImplTest {
             "}";
 
     private YaraImpl yara;
+
+    private String randomString(String prefix) {
+        SecureRandom random = new SecureRandom();
+
+        // Generate a random filename with high entropy
+        String randomStr = new BigInteger(130, random).toString(32);
+
+        return String.format("%s_%s", prefix, randomStr);
+    }
 
     @BeforeEach
     public void setup()
@@ -146,11 +154,12 @@ public class YaraCompilerImplTest {
                 fail();
             }
         };
+        String rulePath = TestUtils.getResource("rules/one-level.zip").toString();
 
 
         try (YaraCompiler compiler = yara.createCompiler()) {
             compiler.setCallback(callback);
-            compiler.addRulesPackage(TestUtils.getResource("rules/one-level.zip").toString(), null);
+            compiler.addRulesPackage(rulePath, null);
         }
     }
 
@@ -206,7 +215,7 @@ public class YaraCompilerImplTest {
         };
 
 
-        Path rule = File.createTempFile(UUID.randomUUID().toString(), "yara")
+        Path rule = File.createTempFile(randomString("testAddRulesFileSucceeds"), "yara")
                 .toPath();
 
         Files.write(rule, YARA_RULE_HELLO.getBytes(), StandardOpenOption.WRITE);
@@ -214,6 +223,10 @@ public class YaraCompilerImplTest {
         try (YaraCompiler compiler = yara.createCompiler()) {
             compiler.setCallback(callback);
             compiler.addRulesFile(rule.toString(), null, null);
+        } finally {
+            if (rule != null) {
+                Files.deleteIfExists(rule);
+            }
         }
     }
 
@@ -229,7 +242,7 @@ public class YaraCompilerImplTest {
             }
         };
 
-        Path rule = File.createTempFile(UUID.randomUUID().toString(), "yara")
+        Path rule = File.createTempFile(randomString("testAddRulesFileFails"), "yara")
                 .toPath();
 
         Files.write(rule, YARA_RULE_FAIL.getBytes(), StandardOpenOption.WRITE);
