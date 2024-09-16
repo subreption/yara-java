@@ -43,7 +43,8 @@ public class YaracExecutable {
             throw new IllegalArgumentException();
         }
         this.executable = executable;
-        this.executable.load();
+        String yaracBinaryPath = System.getenv("YARAC_BINARY_PATH");
+        this.executable.load(yaracBinaryPath);
     }
 
 

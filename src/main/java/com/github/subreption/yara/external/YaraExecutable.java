@@ -34,7 +34,8 @@ public class YaraExecutable {
             throw new IllegalArgumentException();
         }
         this.executable = executable;
-        this.executable.load();
+        String yaraBinaryPath = System.getenv("YARA_BINARY_PATH");
+        this.executable.load(yaraBinaryPath);
     }
 
     public YaraExecutable addRule(Path file) {

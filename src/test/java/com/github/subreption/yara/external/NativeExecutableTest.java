@@ -34,18 +34,18 @@ public class NativeExecutableTest {
     @Test
     public void testLoadNotFound() {
         NativeExecutable exe = new NativeExecutable(UUID.randomUUID().toString());
-        assertFalse(exe.load());
+        assertFalse(exe.load(null));
     }
 
     @Test
     public void testLoadYara() {
         NativeExecutable exe = new NativeExecutable("yara");
-        assertTrue(exe.load());
+        assertTrue(exe.load(System.getenv("YARA_BINARY_PATH")));
     }
 
     @Test
     public void testLoadYarac() {
         NativeExecutable exe = new NativeExecutable("yarac");
-        assertTrue(exe.load());
+        assertTrue(exe.load(System.getenv("YARAC_BINARY_PATH")));
     }
 }

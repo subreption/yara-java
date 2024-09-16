@@ -15,7 +15,8 @@ public class YaraExecutableManager {
             synchronized (yaraLock) {
                 if (yara == null) {
                     yara = new NativeExecutable("yara");
-                    yara.load();
+                    String yaraBinaryPath = System.getenv("YARA_BINARY_PATH");
+                    yara.load(yaraBinaryPath);
                 }
             }
         }
@@ -27,7 +28,8 @@ public class YaraExecutableManager {
             synchronized (yaracLock) {
                 if (yarac == null) {
                     yarac = new NativeExecutable("yarac");
-                    yarac.load();
+                    String yaracBinaryPath = System.getenv("YARAC_BINARY_PATH");
+                    yarac.load(yaracBinaryPath);
                 }
             }
         }

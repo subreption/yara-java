@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.*;
@@ -56,7 +57,25 @@ public class NativeExecutable {
         }
     }
 
-    public synchronized boolean load() {
+    public synchronized boolean load(String localFallback) {
+        if (localFallback != null) {
+            Path fallbackPath = Paths.get(localFallback);
+
+            // Check if the path exists and is executable
+            if (!Files.exists(fallbackPath)) {
+                logger.warn("The fallback path does not exist: " + localFallback);
+                return false;
+            }
+
+            if (!Files.isExecutable(fallbackPath)) {
+                logger.warn("The fallback path is not executable: " + localFallback);
+                return false;
+            }
+
+            // If the path exists and is executable, set localPath to it
+            localPath = fallbackPath;
+        }
+
         if (localPath == null) {
             localPath = doLoad();
         }
