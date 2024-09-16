@@ -1,9 +1,5 @@
 package com.github.subreption.yara.external;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.fusesource.hawtjni.runtime.Library;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +9,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import org.fusesource.hawtjni.runtime.Library;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Native executable dependency
