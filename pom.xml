@@ -130,8 +130,16 @@
                                 </dirset>
                                 <copy file="${env.YARA_HOME}/yara"
                                       tofile="${project.build.directory}/generated-sources/hawtjni/lib/META-INF/native/${toString:platform}/yara"/>
-                                <copy file="${env.YARA_HOME}/yarac"
+                                <chmod file="${project.build.directory}/generated-sources/hawtjni/lib/META-INF/native/${toString:platform}/yara" perm="755"/>
+                                <copy file="${env.YARA_HOME}/.libs/yarac"
                                       tofile="${project.build.directory}/generated-sources/hawtjni/lib/META-INF/native/${toString:platform}/yarac"/>
+                                <copy file="${env.YARA_HOME}/libyara/.libs/libyara.so"
+                                      tofile="${project.build.directory}/generated-sources/hawtjni/lib/META-INF/native/${toString:platform}/libyara.so"/>
+                                <copy file="${env.YARA_HOME}/libyara/.libs/libyara.so.4"
+                                      tofile="${project.build.directory}/generated-sources/hawtjni/lib/META-INF/native/${toString:platform}/libyara.so.4"/>
+                                <copy file="${env.YARA_HOME}/libyara/.libs/libyara.so.4.0.2"
+                                      tofile="${project.build.directory}/generated-sources/hawtjni/lib/META-INF/native/${toString:platform}/libyara.so.4.0.2"/>
+                                <chmod file="${project.build.directory}/generated-sources/hawtjni/lib/META-INF/native/${toString:platform}/yarac" perm="755"/>
                                 <jar destfile="${project.build.directory}/${project.artifactId}-${project.version}-${toString:platform}.jar"
                                      basedir="${project.build.directory}/generated-sources/hawtjni/lib/"
                                      update="true">
@@ -152,8 +160,17 @@
                                 </dirset>
                                 <copy file="${env.YARA_HOME}/yara"
                                       tofile="${project.build.directory}/test-classes/META-INF/native/${toString:platform}/yara"/>
-                                <copy file="${env.YARA_HOME}/yarac"
+                                <chmod file="${project.build.directory}/test-classes/META-INF/native/${toString:platform}/yara" perm="755"/>
+                                <copy file="${env.YARA_HOME}/.libs/yarac"
                                       tofile="${project.build.directory}/test-classes/META-INF/native/${toString:platform}/yarac"/>
+                                <chmod file="${project.build.directory}/test-classes/META-INF/native/${toString:platform}/yarac" perm="755"/>
+
+                                <copy file="${env.YARA_HOME}/libyara/.libs/libyara.so"
+                                      tofile="${project.build.directory}/test-classes/hawtjni/lib/META-INF/native/${toString:platform}/libyara.so"/>
+                                <copy file="${env.YARA_HOME}/libyara/.libs/libyara.so.4"
+                                      tofile="${project.build.directory}/test-classes/hawtjni/lib/META-INF/native/${toString:platform}/libyara.so.4"/>
+                                <copy file="${env.YARA_HOME}/libyara/.libs/libyara.so.4.0.2"
+                                      tofile="${project.build.directory}/test-classes/hawtjni/lib/META-INF/native/${toString:platform}/libyara.so.4.0.2"/>
                             </target>
                         </configuration>
                     </execution>
