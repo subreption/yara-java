@@ -29,13 +29,11 @@ public class NativeExecutable {
     static {
         EXECUTABLE_PERMISSIONS.add(PosixFilePermission.GROUP_EXECUTE);
         EXECUTABLE_PERMISSIONS.add(PosixFilePermission.GROUP_READ);
-        EXECUTABLE_PERMISSIONS.add(PosixFilePermission.GROUP_WRITE);
         EXECUTABLE_PERMISSIONS.add(PosixFilePermission.OWNER_EXECUTE);
         EXECUTABLE_PERMISSIONS.add(PosixFilePermission.OWNER_READ);
         EXECUTABLE_PERMISSIONS.add(PosixFilePermission.OWNER_WRITE);
         EXECUTABLE_PERMISSIONS.add(PosixFilePermission.OTHERS_EXECUTE);
         EXECUTABLE_PERMISSIONS.add(PosixFilePermission.OTHERS_READ);
-        EXECUTABLE_PERMISSIONS.add(PosixFilePermission.OTHERS_WRITE);
     }
 
     private final String name;
