@@ -4,27 +4,28 @@ Highlights
 ------------
 - Does not require yara to be deployed (embeds all needed native dependencies)
 - Supports two modes of operation:
-  - External: yara binary extracted and executed as a child process
+  - External: yara/yarac binary installed, or extracted and executed as a child process
   - Embedded: yara jnilib runs embedded in the java process
 - Rules can be loaded as strings, files or archives; for archives will recursively look for and load all yara rule files
 - Matches are returned with identifier, metadata and tags
 - Negate, timeout and limit supported
-- Support yara 4.0.2 -- 2021/1/17
+- Supports yara 4.5.2 (2024)
+- Vulnerabilities and other developer "quality of life" issues present in the original fork fixed.
+- Isolated test units providing repeatable results, especially for the embedded implementations.
 
-
-How to build 
-------------  
+How to build
+------------
 
 ### Get and build yara source code
 
-Example (building from 4.0.2 version)
+Example (building from 4.5.2 version)
 
 ```
 git clone https://github.com/virustotal/yara.git
 cd yara
-git checkout tags/v4.0.2
+git checkout tags/v4.5.2
 ./bootstrap.sh
-./configure --enable-shared --without-crypto CFLAGS=-fPIC
+./configure --disable-shared --without-crypto CFLAGS=-fPIC
 make
 export YARA_HOME=/path/to/compiled/yara
 ```
@@ -38,6 +39,12 @@ git clone https://github.com/p8a/yara-java.git
 cd yara-java
 mvn clean install
 ```
+
+It is preferable, especially in hardened environments (where `/tmp` might not be executable or even normally writable), to
+use the YARA_BINARY_PATH and YARAC_BINARY_PATH environment variables, pointing at working yara and yarac (compiler) installations, respectively.
+The library will attempt to use these whenever the external variant of the scanner or compiler classes are used.
+
+In the future, it is possible those might be removed entirely.
 
 Usage and examples
 ------------------
