@@ -1,0 +1,78 @@
+name: Java CI
+
+on:
+  push:
+    branches:
+      - main
+      - gh-workflow-testing
+  pull_request:
+    branches:
+      - main
+      - gh-workflow-testing
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        jdk: [21]
+        libyara_tag: ["v4.5.2-subreption"]
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up JDK
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: ${{ matrix.jdk }}
+          settings-path: ${{ github.workspace }}
+
+      - name: Clone libyara (${{ matrix.libyara_tag }})
+        uses: actions/checkout@v4
+        with:
+          repository: subreption/yara
+          path: yara
+          ref: ${{ matrix.libyara_tag }}
+          token: ${{ secrets.GH_YARA_REPO_PAT }}
+
+      # Step 3: Clone the YARA repository and build it
+      - name: Build libyara (${{ matrix.libyara_tag }})
+        run: |
+          cd yara
+          ./bootstrap.sh
+          ./configure --without-crypto --enable-area --disable-shared CFLAGS=-fPIC
+          make
+          echo "YARA_HOME=$PWD" >> $GITHUB_ENV
+
+      # Step 4: Clone the YARA-Java repository and build it
+      - name: Build YARA-Java
+        run: mvn -B package --file pom.xml
+        env:
+          YARA_HOME: ${{ env.YARA_HOME }}
+          YARA_BINARY_PATH: ${{ env.YARA_HOME }}/yara
+          YARAC_BINARY_PATH: ${{ env.YARA_HOME }}/yarac
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: target/*.jar
+          overwrite: true
+
+      # Set up GitHub Packages authentication
+      - name: Set up Maven settings.xml for GitHub Packages
+        run: |
+          mkdir -p ~/.m2
+          echo "<settings><servers><server><id>github</id><username>${{ github.actor }}</username><password>${{ secrets.GITHUB_TOKEN }}</password></server></servers></settings>" > ~/.m2/settings.xml
+
+      - name: Deploy Maven artifacts
+        run: mvn deploy -s ~/.m2/settings.xml -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }}
+
+    outputs:
+      maven-artifact: ${{ steps.build.outputs.maven-artifact }}
