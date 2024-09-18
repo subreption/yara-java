@@ -331,17 +331,17 @@ public class YaraScannerImplTest {
 
         YaraMeta meta = metas.next();
         assertEquals(YaraMeta.Type.STRING, meta.getType());
-        assertEquals("my_identifier_1", meta.getIndentifier());
+        assertEquals("my_identifier_1", meta.getIdentifier());
         assertEquals("Some string data", meta.getString());
 
         meta = metas.next();
         assertEquals(YaraMeta.Type.INTEGER, meta.getType());
-        assertEquals("my_identifier_2", meta.getIndentifier());
+        assertEquals("my_identifier_2", meta.getIdentifier());
         assertEquals(24, meta.getInteger());
 
         meta = metas.next();
         assertEquals(YaraMeta.Type.BOOLEAN, meta.getType());
-        assertEquals("my_identifier_3", meta.getIndentifier());
+        assertEquals("my_identifier_3", meta.getIdentifier());
         assertEquals(1, meta.getInteger());
 
         assertFalse(metas.hasNext());

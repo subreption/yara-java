@@ -38,7 +38,7 @@ public class YaraMetaImpl implements YaraMeta {
     }
 
     @Override
-    public String getIndentifier() {
+    public String getIdentifier() {
         return identifier;
     }
 

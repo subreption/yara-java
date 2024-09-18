@@ -27,7 +27,7 @@ public class YaraMetaImpl implements YaraMeta {
         return Type.from(library.metaType(peer));
     }
 
-    public String getIndentifier() {
+    public String getIdentifier() {
         return library.metaIdentifier(peer);
     }
 

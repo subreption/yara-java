@@ -228,7 +228,7 @@ public class YaraLibrary implements Closeable {
     }
 
     private final native long yara_string_matches(
-        JNIEnv env, 
+        JNIEnv env,
         @JniArg(cast = "void*") long context,
         @JniArg(cast = "void*") long pv);
     public long stringMatches(long context, long pv) {
@@ -237,7 +237,7 @@ public class YaraLibrary implements Closeable {
     }
 
     private final native long yara_string_match_next(
-        JNIEnv env, 
+        JNIEnv env,
         @JniArg(cast = "void*") long pv);
     public long stringMatchNext(long pv) {
         Preconditions.checkState(library != null);

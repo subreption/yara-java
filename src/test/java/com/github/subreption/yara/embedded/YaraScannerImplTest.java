@@ -1,11 +1,5 @@
 package com.github.subreption.yara.embedded;
 
-import com.github.subreption.yara.*;
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -17,13 +11,26 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.mock;
+
+import com.github.subreption.yara.YaraCompilationCallback;
+import com.github.subreption.yara.YaraCompiler;
+import com.github.subreption.yara.YaraMatch;
+import com.github.subreption.yara.YaraMeta;
+import com.github.subreption.yara.YaraScanCallback;
+import com.github.subreption.yara.YaraScanner;
+import com.github.subreption.yara.YaraString;
+
+import net.jcip.annotations.NotThreadSafe;
 
 
 /**
@@ -329,17 +336,17 @@ public class YaraScannerImplTest {
 
         YaraMeta meta = metas.next();
         assertEquals(YaraMeta.Type.STRING, meta.getType());
-        assertEquals("my_identifier_1", meta.getIndentifier());
+        assertEquals("my_identifier_1", meta.getIdentifier());
         assertEquals("Some string data", meta.getString());
 
         meta = metas.next();
         assertEquals(YaraMeta.Type.INTEGER, meta.getType());
-        assertEquals("my_identifier_2", meta.getIndentifier());
+        assertEquals("my_identifier_2", meta.getIdentifier());
         assertEquals(24, meta.getInteger());
 
         meta = metas.next();
         assertEquals(YaraMeta.Type.BOOLEAN, meta.getType());
-        assertEquals("my_identifier_3", meta.getIndentifier());
+        assertEquals("my_identifier_3", meta.getIdentifier());
         assertEquals(1, meta.getInteger());
 
         assertFalse(metas.hasNext());

@@ -1,8 +1,5 @@
 package com.github.subreption.yara.external;
 
-import com.github.subreption.yara.*;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -13,7 +10,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.mock;
+
+import com.github.subreption.yara.YaraMatch;
+import com.github.subreption.yara.YaraMeta;
+import com.github.subreption.yara.YaraRule;
+import com.github.subreption.yara.YaraScanCallback;
+import com.github.subreption.yara.YaraString;
 
 
 /**
@@ -111,11 +115,11 @@ public class YaraOutputProcessorTest {
         Iterator<YaraMeta> metas = rule.getMetadata();
 
         YaraMeta meta = metas.next();
-        assertEquals("name", meta.getIndentifier());
+        assertEquals("name", meta.getIdentifier());
         assertEquals("InstallsDriver", meta.getString());
 
         meta = metas.next();
-        assertEquals("description", meta.getIndentifier());
+        assertEquals("description", meta.getIdentifier());
         assertEquals("The file attempted to install a driver", meta.getString());
 
         assertFalse(metas.hasNext());
@@ -143,15 +147,15 @@ public class YaraOutputProcessorTest {
         Iterator<YaraMeta> metas = rule.getMetadata();
 
         YaraMeta meta = metas.next();
-        assertEquals("string", meta.getIndentifier());
+        assertEquals("string", meta.getIdentifier());
         assertEquals("String", meta.getString());
 
         meta = metas.next();
-        assertEquals("number", meta.getIndentifier());
+        assertEquals("number", meta.getIdentifier());
         assertEquals(1, meta.getInteger());
 
         meta = metas.next();
-        assertEquals("boolean", meta.getIndentifier());
+        assertEquals("boolean", meta.getIdentifier());
         assertEquals(1, meta.getInteger());
 
         assertFalse(metas.hasNext());
@@ -189,31 +193,31 @@ public class YaraOutputProcessorTest {
         Iterator<YaraMeta> metas = rule.getMetadata();
 
         YaraMeta meta = metas.next();
-        assertEquals("name", meta.getIndentifier());
+        assertEquals("name", meta.getIdentifier());
         assertEquals("InstallsDriver", meta.getString());
 
         meta = metas.next();
-        assertEquals("description", meta.getIndentifier());
+        assertEquals("description", meta.getIdentifier());
         assertEquals("The file attempted to install a driver", meta.getString());
 
         meta = metas.next();
-        assertEquals("categories", meta.getIndentifier());
+        assertEquals("categories", meta.getIdentifier());
         assertEquals("Process \",= Creation", meta.getString());
 
         meta = metas.next();
-        assertEquals("type", meta.getIndentifier());
+        assertEquals("type", meta.getIdentifier());
         assertEquals("external", meta.getString());
 
         meta = metas.next();
-        assertEquals("behaviors", meta.getIndentifier());
+        assertEquals("behaviors", meta.getIdentifier());
         assertEquals("InstallsDriver", meta.getString());
 
         meta = metas.next();
-        assertEquals("output", meta.getIndentifier());
+        assertEquals("output", meta.getIdentifier());
         assertEquals("([^\"]*)$", meta.getString());
 
         meta = metas.next();
-        assertEquals("template", meta.getIndentifier());
+        assertEquals("template", meta.getIdentifier());
         assertEquals("%s", meta.getString());
 
         assertFalse(metas.hasNext());
@@ -251,11 +255,11 @@ public class YaraOutputProcessorTest {
         // Hello world metas
         Iterator<YaraMeta> metas = rule.getMetadata();
         YaraMeta meta = metas.next();
-        assertEquals("name", meta.getIndentifier());
+        assertEquals("name", meta.getIdentifier());
         assertEquals("InstallsDriver", meta.getString());
 
         meta = metas.next();
-        assertEquals("description", meta.getIndentifier());
+        assertEquals("description", meta.getIdentifier());
         assertEquals("The file attempted to install a driver", meta.getString());
 
         // Hello world matches
@@ -282,11 +286,11 @@ public class YaraOutputProcessorTest {
         // Hereisatest  metas
         metas = rule.getMetadata();
         meta = metas.next();
-        assertEquals("internal", meta.getIndentifier());
+        assertEquals("internal", meta.getIdentifier());
         assertEquals(1, meta.getInteger());
 
         meta = metas.next();
-        assertEquals("value", meta.getIndentifier());
+        assertEquals("value", meta.getIdentifier());
         assertEquals(123, meta.getInteger());
 
         // Hereisatest matches

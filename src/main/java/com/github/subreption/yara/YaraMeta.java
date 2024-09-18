@@ -39,7 +39,7 @@ public interface YaraMeta {
      *
      * @return
      */
-    String getIndentifier();
+    String getIdentifier();
 
     /**
      * Get metadata string value
