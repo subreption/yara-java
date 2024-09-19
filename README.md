@@ -1,4 +1,6 @@
 
+![build](https://github.com/subreption/yara-java/actions/workflows/ci.yml/badge.svg)
+
 ## Introduction
 
 This is Subreption's fork of the original `yara-java` project, with improvements, fixes and ongoing maintenance.
