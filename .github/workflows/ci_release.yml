@@ -1,0 +1,99 @@
+name: Stable Release linux64
+
+on:
+  push:
+    tags:
+      - '*-stable-release'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        jdk: [21]
+        libyara_tag: ["v4.5.2-subreption"]
+        arch: [linux64]
+        os: [ubuntu-latest]
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up JDK
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: ${{ matrix.jdk }}
+          settings-path: ${{ github.workspace }}
+
+      - name: Clone libyara (${{ matrix.libyara_tag }})
+        uses: actions/checkout@v4
+        with:
+          repository: subreption/yara
+          path: yara
+          ref: ${{ matrix.libyara_tag }}
+          token: ${{ secrets.GH_YARA_REPO_PAT }}
+
+      # Step 3: Clone the YARA repository and build it
+      - name: Build libyara (${{ matrix.libyara_tag }})
+        run: |
+          cd yara
+          ./bootstrap.sh
+          ./configure --without-crypto --enable-area --disable-shared CFLAGS=-fPIC
+          make
+          echo "YARA_HOME=$PWD" >> $GITHUB_ENV
+
+      # Step 4: Build YARA-Java
+      - name: Build YARA-Java
+        run: mvn -B package --file pom.xml
+        env:
+          YARA_HOME: ${{ env.YARA_HOME }}
+          YARA_BINARY_PATH: ${{ env.YARA_HOME }}/yara
+          YARAC_BINARY_PATH: ${{ env.YARA_HOME }}/yarac
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jars
+          path: target/*.jar
+          if-no-files-found: error
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+
+    strategy:
+      matrix:
+        jdk: [21]
+        libyara_tag: ["v4.5.2-subreption"]
+        arch: [linux64]
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Download build artifacts (jars)
+        uses: actions/download-artifact@v4
+        with:
+          name: jars
+
+      - name: List current working directory
+        run: ls -lhrt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ github.ref }} (${{ matrix.arch }})
+          draft: true
+          prerelease: false
+          generate_release_notes: true
+          files: ./*.jar
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    outputs:
+      maven-artifact: ${{ steps.build.outputs.maven-artifact }}
