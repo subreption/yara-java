@@ -181,6 +181,26 @@ yara_match_value(JNIEnv *env, void *v) {
     return value;
 }
 
+/* Object is used as workaround for a bug in hawtjni */
+static jobject
+yara_match_bytes(JNIEnv *env, void *v) {
+    YR_MATCH *match = (YR_MATCH *)v;
+    jbyteArray value;
+
+    if (!v) {
+        return 0;
+    }
+
+    value = (*env)->NewByteArray(env, match->data_length);
+    if (value == NULL)
+        return NULL;
+
+    // Copy the bytes from YR_MATCH's data into the Java byte array
+    (*env)->SetByteArrayRegion(env, value, 0, match->data_length, (const jbyte*)match->data);
+
+    return value;
+}
+
 /*
  *  Compilation
  */

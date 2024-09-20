@@ -277,6 +277,17 @@ public class YaraLibrary implements Closeable {
     }
 
     /*
+     * hawtjni is unable to play nicely with jbyteArray in the prototype
+     * as a workaround, Object is used to keep it happy, and the interface impl
+     * correctly casts it to byte[].
+     */
+    private final native Object yara_match_bytes(JNIEnv env, @JniArg(cast = "void*") long pv);
+    public byte[] matchBytes(long pv) {
+        Preconditions.checkState(library != null);
+        return (byte[]) yara_match_bytes(null, pv);
+    }
+
+    /*
         Modules
      */
     private final native String yara_module_name(JNIEnv env, @JniArg(cast = "void*") long pv);

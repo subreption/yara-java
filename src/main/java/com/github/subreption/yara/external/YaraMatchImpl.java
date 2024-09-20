@@ -35,6 +35,11 @@ public class YaraMatchImpl implements YaraMatch {
     }
 
     @Override
+    public byte[] getBytes() {
+        return getValue().getBytes();
+    }
+
+    @Override
     public long getOffset() {
         return offset;
     }

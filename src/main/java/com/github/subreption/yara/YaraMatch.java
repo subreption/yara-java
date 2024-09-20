@@ -29,6 +29,13 @@ public interface YaraMatch {
     String getValue();
 
     /**
+     * Value that was matched as byte array
+     *
+     * @return
+     */
+    byte[] getBytes();
+
+    /**
      * Offset where match was found
      *
      * @return

@@ -46,6 +46,7 @@ import com.github.subreption.yara.YaraMeta;
 import com.github.subreption.yara.YaraScanCallback;
 import com.github.subreption.yara.YaraScanner;
 import com.github.subreption.yara.YaraString;
+import com.github.subreption.yara.TestUtils;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -370,6 +371,9 @@ public class YaraScannerImplTest {
     }
 
     private void assertStrings(Iterator<YaraString> strings) {
+        String helloWorld = "Hello world";
+        byte[] helloWorldBytes = helloWorld.getBytes();
+
         assertNotNull(strings);
 
         YaraString string = strings.next();
@@ -381,7 +385,9 @@ public class YaraScannerImplTest {
 
         YaraMatch match = matches.next();
         assertEquals(0, match.getOffset());
-        assertEquals("Hello world", match.getValue());
+        assertEquals(helloWorld, match.getValue());
+        assertEquals(TestUtils.bytesToHex(helloWorldBytes), TestUtils.bytesToHex(match.getBytes()));
+        assertEquals(helloWorldBytes.length, match.getBytes().length);
         assertFalse(matches.hasNext());
 
         assertFalse(strings.hasNext());

@@ -45,6 +45,14 @@ public class YaraMatchImpl implements YaraMatch {
     }
 
     /**
+     * Value that was matched as byte array
+     * @return
+     */
+    public byte[] getBytes() {
+        return library.matchBytes(peer);
+    }
+
+    /**
      * Offset where match was found
      * @return
      */
