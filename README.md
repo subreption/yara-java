@@ -1,6 +1,5 @@
 
-![build](https://github.com/subreption/yara-java/actions/workflows/ci.yml/badge.svg)
-[![Stable Release linux64](https://github.com/subreption/yara-java/actions/workflows/ci_release.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/ci_release.yml)
+[![Build (linux64)](https://github.com/subreption/yara-java/actions/workflows/build_linux64.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/build_linux64.yml) [![Build (multiplatform)](https://github.com/subreption/yara-java/actions/workflows/build_multi.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/build_multi.yml) [![Build (osx64)](https://github.com/subreption/yara-java/actions/workflows/build_macos.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/build_macos.yml) [![Nightly Release (multiplatform)](https://github.com/subreption/yara-java/actions/workflows/ci_nightly.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/ci_nightly.yml) [![Stable Release multiplatform](https://github.com/subreption/yara-java/actions/workflows/ci_release.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/ci_release.yml)
 
 ## Introduction
 

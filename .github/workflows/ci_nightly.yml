@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         jdk: [21]
-        libyara_tag: ["v4.5.2-subreption"]
+        libyara_tag: [ "v4.5.2-subreption" ]
 
     steps:
       # Step 1: Checkout the repository
@@ -57,11 +57,29 @@ jobs:
           name: linux64-artifacts
           path: target/*.jar
           overwrite: true
+
+      - name: Set up Maven settings.xml for GitHub Packages
+        run: |
+          mkdir -p ~/.m2
+          echo "<settings><servers><server><id>github</id><username>${{ github.actor }}</username><password>${{ secrets.GITHUB_TOKEN }}</password></server></servers></settings>" > ~/.m2/settings.xml
+
+      - name: Deploy Maven artifacts
+        run: mvn deploy -s ~/.m2/settings.xml -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }} || echo "Deployment failed but continuing..."
+
+      - name: Cleanup
+        run: |
+          rm -rf ~/.m2/settings.xml
+
     outputs:
       linux-artifact: ${{ steps.build.outputs.maven-artifact }}
 
   build_mac:
     runs-on: macos-latest
+
+    strategy:
+      matrix:
+        jdk: [21]
+        libyara_tag: [ "v4.5.2-subreption" ]
 
     steps:
       # Step 1: Checkout the repository
@@ -69,11 +87,11 @@ jobs:
         uses: actions/checkout@v4
 
       # Step 2: Set up JDK 21 on macOS
-      - name: Set up JDK 21 on macOS
+      - name: Set up JDK on macOS
         uses: actions/setup-java@v4
         with:
           distribution: 'oracle'
-          java-version: 21
+          java-version: ${{ matrix.jdk }}
           settings-path: ${{ github.workspace }}
 
       - name: Install dependencies
@@ -120,6 +138,22 @@ jobs:
           YARA_HOME: ${{ env.YARA_HOME }}
           YARA_BINARY_PATH: ${{ env.YARA_HOME }}/yara
           YARAC_BINARY_PATH: ${{ env.YARA_HOME }}/yarac
+
+      - name: Set up Maven settings.xml for GitHub Packages
+        run: |
+          mkdir -p ~/.m2
+          echo "<settings><servers><server><id>github</id><username>${{ github.actor }}</username><password>${{ secrets.GITHUB_TOKEN }}</password></server></servers></settings>" > ~/.m2/settings.xml
+
+      - name: Deploy Maven artifacts
+        run: mvn deploy -Pmac -am -s ~/.m2/settings.xml -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }} || echo "Deployment failed but continuing..."
+        env:
+          YARA_HOME: ${{ env.YARA_HOME }}
+          YARA_BINARY_PATH: ${{ env.YARA_HOME }}/yara
+          YARAC_BINARY_PATH: ${{ env.YARA_HOME }}/yarac
+
+      - name: Cleanup
+        run: |
+          rm -rf ~/.m2/settings.xml
 
       - name: Show versions
         run: |
@@ -190,12 +224,15 @@ jobs:
       - name: List current working directory
         run: ls -lhRt
 
+      - name: Set Date for Nightly Release
+        run: echo "RELEASE_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
       - name: Create GitHub Nightly Release
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref }} (multiplatform)
+          tag_name: latest
+          name: Nightly (multiplatform) - ${{ env.RELEASE_DATE }}
           draft: false
           prerelease: true
           generate_release_notes: true
