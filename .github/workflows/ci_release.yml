@@ -121,6 +121,9 @@ jobs:
           ref: ${{ matrix.libyara_tag }}
           token: ${{ secrets.GH_YARA_REPO_PAT }}
 
+      - name: List current working directory
+        run: ls -lhRt
+
       # Step 3: Build libyara on macOS
       - name: Build libyara on macOS (${{ matrix.libyara_tag }})
         run: |
@@ -129,6 +132,9 @@ jobs:
           ./configure --without-crypto --enable-area --disable-shared CFLAGS=-fPIC
           make
           echo "YARA_HOME=$PWD" >> $GITHUB_ENV
+
+      - name: List current working directory
+        run: ls -lhRt
 
       # Step 4: Build YARA-Java on macOS
       - name: Build YARA-Java (macOS)
