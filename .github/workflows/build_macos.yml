@@ -1,0 +1,80 @@
+name: Build (osx64)
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+  build_mac:
+    runs-on: macos-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up JDK 21 on macOS
+      - name: Set up JDK 21 on macOS
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: 21
+          settings-path: ${{ github.workspace }}
+
+      - name: Install dependencies
+        run: |
+          brew install \
+            autoconf \
+            automake \
+            bison \
+            flex \
+            libtool \
+            pkg-config \
+            jansson \
+            libmagic \
+            openssl@3 \
+            protobuf \
+            protobuf-c
+
+      - name: Print versions
+        run: |
+          bison --version
+          gcc --version
+
+      - name: Clone libyara (${{ matrix.libyara_tag }})
+        uses: actions/checkout@v4
+        with:
+          repository: subreption/yara
+          path: yara
+          ref: ${{ matrix.libyara_tag }}
+          token: ${{ secrets.GH_YARA_REPO_PAT }}
+
+      # Step 3: Build libyara on macOS
+      - name: Build libyara on macOS (${{ matrix.libyara_tag }})
+        run: |
+          cd yara
+          ./bootstrap.sh
+          ./configure --without-crypto --enable-area --disable-shared CFLAGS=-fPIC
+          make
+          echo "YARA_HOME=$PWD" >> $GITHUB_ENV
+
+      # Step 4: Build YARA-Java on macOS
+      - name: Build YARA-Java (macOS)
+        run: mvn -B package --file pom.xml
+        env:
+          YARA_HOME: ${{ env.YARA_HOME }}
+          YARA_BINARY_PATH: ${{ env.YARA_HOME }}/yara
+          YARAC_BINARY_PATH: ${{ env.YARA_HOME }}/yarac
+
+      - name: List built
+        run: |
+          bison --version
+          gcc --version
+
+      - name: Upload macOS build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-build-artifacts
+          path: target/*-osx64.jar
+          overwrite: true

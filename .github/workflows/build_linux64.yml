@@ -1,0 +1,62 @@
+name: Build (linux64)
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+
+  build_linux64:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        jdk: [21]
+        libyara_tag: ["v4.5.2-subreption"]
+        arch: [linux64]
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up JDK
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: ${{ matrix.jdk }}
+          settings-path: ${{ github.workspace }}
+
+      - name: Clone libyara (${{ matrix.libyara_tag }})
+        uses: actions/checkout@v4
+        with:
+          repository: subreption/yara
+          path: yara
+          ref: ${{ matrix.libyara_tag }}
+          token: ${{ secrets.GH_YARA_REPO_PAT }}
+
+      # Step 3: Clone the YARA repository and build it
+      - name: Build libyara (${{ matrix.libyara_tag }})
+        run: |
+          cd yara
+          ./bootstrap.sh
+          ./configure --without-crypto --enable-area --disable-shared CFLAGS=-fPIC
+          make
+          echo "YARA_HOME=$PWD" >> $GITHUB_ENV
+
+      # Step 4: Build YARA-Java
+      - name: Build YARA-Java
+        run: mvn -B package --file pom.xml
+        env:
+          YARA_HOME: ${{ env.YARA_HOME }}
+          YARA_BINARY_PATH: ${{ env.YARA_HOME }}/yara
+          YARAC_BINARY_PATH: ${{ env.YARA_HOME }}/yarac
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.arch }}-artifacts
+          path: target/*.jar
+          if-no-files-found: error

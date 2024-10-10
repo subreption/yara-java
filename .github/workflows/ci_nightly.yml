@@ -1,21 +1,17 @@
-name: Stable Release (multiplatform)
+name: Nightly Release (multiplatform)
 
 on:
-  push:
-    tags:
-      - '*-stable-release'
   workflow_dispatch:
+  push:
 
 jobs:
-
-  build_linux64:
+  build_linux:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         jdk: [21]
         libyara_tag: ["v4.5.2-subreption"]
-        arch: [linux64]
 
     steps:
       # Step 1: Checkout the repository
@@ -38,7 +34,7 @@ jobs:
           ref: ${{ matrix.libyara_tag }}
           token: ${{ secrets.GH_YARA_REPO_PAT }}
 
-      # Step 3: Clone the YARA repository and build it
+      # Step 3: Build libyara on Linux
       - name: Build libyara (${{ matrix.libyara_tag }})
         run: |
           cd yara
@@ -47,7 +43,7 @@ jobs:
           make
           echo "YARA_HOME=$PWD" >> $GITHUB_ENV
 
-      # Step 4: Build YARA-Java
+      # Step 4: Build YARA-Java on Linux
       - name: Build YARA-Java
         run: mvn -B package --file pom.xml
         env:
@@ -55,25 +51,24 @@ jobs:
           YARA_BINARY_PATH: ${{ env.YARA_HOME }}/yara
           YARAC_BINARY_PATH: ${{ env.YARA_HOME }}/yarac
 
-      - name: Upload build artifacts
+      - name: Upload linux64 build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.arch }}-artifacts
+          name: linux64-artifacts
           path: target/*.jar
-          if-no-files-found: error
+          overwrite: true
     outputs:
       linux-artifact: ${{ steps.build.outputs.maven-artifact }}
 
-  build_osx64:
+  build_mac:
     runs-on: macos-latest
 
-    strategy:
-      matrix:
-        jdk: [21]
-        libyara_tag: ["v4.5.2-subreption"]
-        arch: [osx64]
-
     steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up JDK 21 on macOS
       - name: Set up JDK 21 on macOS
         uses: actions/setup-java@v4
         with:
@@ -126,15 +121,15 @@ jobs:
           YARA_BINARY_PATH: ${{ env.YARA_HOME }}/yara
           YARAC_BINARY_PATH: ${{ env.YARA_HOME }}/yarac
 
-      - name: List built
+      - name: Show versions
         run: |
           bison --version
           gcc --version
 
-      - name: Upload macOS build artifacts
+      - name: Upload osx64 build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.arch }}-artifacts
+          name: osx64-artifacts
           path: target/*-osx64.jar
           overwrite: true
 
@@ -142,7 +137,7 @@ jobs:
       mac-artifact: ${{ steps.build.outputs.maven-artifact }}
 
   bundle:
-    needs: [build_linux64, build_osx64]
+    needs: [build_linux, build_mac]
     runs-on: ubuntu-latest
 
     steps:
@@ -152,11 +147,14 @@ jobs:
           name: linux64-artifacts
           path: build/linux64
 
-      - name: Download osx64 build artifacts
+      - name: Download macOS build artifacts
         uses: actions/download-artifact@v4
         with:
           name: osx64-artifacts
           path: build/osx64
+
+      - name: List current working directory
+        run: ls -lhRt
 
       # Step to bundle Linux and macOS JARs
       - name: Bundle multiplatform JARs
@@ -192,13 +190,14 @@ jobs:
       - name: List current working directory
         run: ls -lhRt
 
-      - name: Create GitHub Release
+      - name: Create GitHub Nightly Release
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref }}
           name: Release ${{ github.ref }} (multiplatform)
-          draft: true
-          prerelease: false
+          draft: false
+          prerelease: true
           generate_release_notes: true
           files: ./*.jar
           fail_on_unmatched_files: true
