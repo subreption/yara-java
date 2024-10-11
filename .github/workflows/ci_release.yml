@@ -86,6 +86,9 @@ jobs:
         arch: [osx64]
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up JDK on macOS
         uses: actions/setup-java@v4
         with:
