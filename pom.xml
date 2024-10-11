@@ -236,6 +236,7 @@
                     <plugin>
                         <groupId>org.fusesource.hawtjni</groupId>
                         <artifactId>maven-hawtjni-plugin</artifactId>
+                        <version>${hawtjni-version}</version>
                         <configuration>
                             <osgiPlatforms>
                                 <osgiPlatform>osname=MacOS;processor=x86-64</osgiPlatform>
