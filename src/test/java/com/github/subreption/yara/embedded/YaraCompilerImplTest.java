@@ -19,6 +19,7 @@ package com.github.subreption.yara.embedded;
 
 import java.io.File;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -27,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -161,6 +163,56 @@ public class YaraCompilerImplTest {
         }
 
         assertTrue(called.get());
+    }
+
+    private static final String YARA_RULE_INCLUDE = "include \"${filePathToInclude}\"\n" +
+            "rule HiThere\n" +
+            "{\n" +
+            "    strings:\n" +
+            "        $a = \"Hi there\"\n" +
+            "    condition:\n" +
+            "        $a\n" +
+            "}\n";
+
+    @Test
+    public void testAddRulesContentFailsOnIncludesDisabled() throws Exception {
+        Path tempFile = Files.createTempFile("yara-rule-test", ".yara");
+        try {
+            Files.write(tempFile, YARA_RULE_HELLO.getBytes(StandardCharsets.UTF_8));
+
+            final AtomicBoolean called = new AtomicBoolean();
+            YaraCompilationCallback callback;
+
+            // Don't disable includes - compilation should pass
+            callback = (errorLevel, fileName, lineNumber, message) -> {
+                called.set(true);
+                logger.debug(String.format("Compilation failed in %s at %d: %s", fileName, lineNumber, message));
+            };
+            try (YaraCompiler compiler = yara.createCompiler()) {
+                compiler.setCallback(callback);
+                compiler.addRulesContent(YARA_RULE_INCLUDE.replace("${filePathToInclude}", tempFile.toAbsolutePath().toString()), null);
+            } catch (YaraException e) {
+                fail("Exception not expected: " + e);
+            }
+            assertFalse(called.get());
+
+            // Disable includes - compilation should fail
+            callback = (errorLevel, fileName, lineNumber, message) -> {
+                called.set(true);
+                assertEquals(1, lineNumber);
+                assertEquals("includes are disabled", message);
+            };
+            try (YaraCompiler compiler = yara.createCompiler()) {
+                compiler.setCallback(callback);
+                compiler.disableIncludes();
+                compiler.addRulesContent(YARA_RULE_INCLUDE.replace("${filePathToInclude}", tempFile.toAbsolutePath().toString()), null);
+                fail();
+            } catch (YaraException e) {
+            }
+            assertTrue(called.get());
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
     }
 
     @Test

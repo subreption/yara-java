@@ -80,6 +80,15 @@ public class YaraLibrary implements Closeable {
         yr_compiler_set_callback(compiler, callback, data);
     }
 
+    private final native void yara_compiler_set_null_include_callback(
+            @JniArg(cast = "YR_COMPILER*") long compiler,
+            @JniArg(cast = "void *") long data
+    );
+    public void compilerDisableIncludes(long compiler, long data) {
+        Preconditions.checkState(library != null);
+        yara_compiler_set_null_include_callback(compiler, data);
+    }
+
     private final native int yr_compiler_add_string(
             @JniArg(cast = "YR_COMPILER *") long compiler,
             String rules,

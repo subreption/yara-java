@@ -29,6 +29,11 @@ public interface YaraCompiler extends AutoCloseable {
     void setCallback(YaraCompilationCallback cbk);
 
     /**
+     * Instruct the compiler not to allow includes in files
+     */
+    void disableIncludes();
+
+    /**
      * Add rules content
      *
      * @param content
