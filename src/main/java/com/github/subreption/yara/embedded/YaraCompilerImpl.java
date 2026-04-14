@@ -97,6 +97,17 @@ public class YaraCompilerImpl implements YaraCompiler {
     }
 
     /**
+     * Instructs the compiler to disallow the usage of includes in rules files.
+     * Compilation will fail if include is present.
+     * Internally it sets includes handling callback to null.
+     * https://yara.readthedocs.io/en/stable/capi.html#c.yr_compiler_set_include_callback
+     */
+    @Override
+    public void disableIncludes() {
+        library.compilerDisableIncludes(peer, 0);
+    }
+
+    /**
      * Release compiler instance
      * @throws Exception
      */

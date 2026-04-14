@@ -220,6 +220,14 @@ yara_compiler_add_file(JNIEnv *env, void *compiler, const char *path, const char
     return ret;
 }
 
+// Disable includes by passing NULL include callback
+// https://yara.readthedocs.io/en/stable/capi.html#c.yr_compiler_set_include_callback
+static void
+yara_compiler_set_null_include_callback(void *compiler, void* user_data) {
+
+    yr_compiler_set_include_callback((YR_COMPILER*)compiler, NULL, NULL, user_data);
+}
+
 /*
  *  Module functions
  */

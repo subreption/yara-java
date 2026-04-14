@@ -68,6 +68,11 @@ public class YaraCompilerImpl implements YaraCompiler {
     }
 
     @Override
+    public void disableIncludes() {
+        logger.warn("Disabling includes is not supported in external mode");
+    }
+
+    @Override
     public void addRulesContent(String content, String namespace) {
         Boolean deleteImmediately = false;
 
