@@ -179,8 +179,85 @@ jobs:
     outputs:
       mac-artifact: ${{ steps.build.outputs.maven-artifact }}
 
+  build_windows64:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        jdk: [21]
+        libyara_tag: [ "v4.5.2-subreption" ]
+        arch: [windows64]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: ${{ matrix.jdk }}
+          settings-path: ${{ github.workspace }}
+
+      - name: Set up MSVC developer environment (x64)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Set up NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Clone libyara (${{ matrix.libyara_tag }})
+        uses: actions/checkout@v4
+        with:
+          repository: subreption/yara
+          path: yara
+          ref: ${{ matrix.libyara_tag }}
+          token: ${{ secrets.GH_YARA_REPO_PAT }}
+
+      # packages.config is not auto-restored by MSBuild.
+      - name: Restore libyara NuGet packages
+        run: nuget restore yara/windows/vs2017/yara.sln
+
+      # libyara only (JNI embedded; no yara/yarac).
+      - name: Build libyara (MSVC Release|x64)
+        run: |
+          msbuild "yara/windows/vs2017/libyara/libyara.vcxproj" /p:Configuration=Release /p:Platform=x64 /v:minimal
+          if ($LASTEXITCODE -ne 0) { throw "msbuild failed for libyara" }
+
+      - name: Export YARA_HOME
+        run: echo "YARA_HOME=${{ github.workspace }}\yara" >> $env:GITHUB_ENV
+
+      - name: Build YARA-Java (Windows)
+        run: mvn -B package --file pom.xml
+        env:
+          YARA_HOME: ${{ env.YARA_HOME }}
+
+      - name: Upload windows64 build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.arch }}-artifacts
+          path: target/*-windows64.jar
+          overwrite: true
+
+      - name: Set up Maven settings.xml for GitHub Packages
+        shell: bash
+        run: |
+          mkdir -p ~/.m2
+          echo "<settings><servers><server><id>github</id><username>${{ github.actor }}</username><password>${{ secrets.GITHUB_TOKEN }}</password></server></servers></settings>" > ~/.m2/settings.xml
+
+      - name: Deploy Maven artifacts
+        shell: bash
+        run: mvn deploy -s ~/.m2/settings.xml -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }} || echo "Deployment failed but continuing..."
+        env:
+          YARA_HOME: ${{ env.YARA_HOME }}
+
+      - name: Cleanup
+        shell: bash
+        run: rm -rf ~/.m2/settings.xml
+
   bundle:
-    needs: [build_linux64, build_osx64]
+    needs: [build_linux64, build_osx64, build_windows64]
     runs-on: ubuntu-latest
 
     steps:
@@ -196,12 +273,19 @@ jobs:
           name: osx64-artifacts
           path: build/osx64
 
-      # Step to bundle Linux and macOS JARs
+      - name: Download windows64 build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows64-artifacts
+          path: build/windows64
+
+      # Step to bundle Linux, macOS, and Windows JARs
       - name: Bundle multiplatform JARs
         run: |
           mkdir -p bundled-jars
           cp build/linux64/*.jar bundled-jars/
           cp build/osx64/*.jar bundled-jars/
+          cp build/windows64/*.jar bundled-jars/
 
       - name: Upload bundled JARs
         uses: actions/upload-artifact@v4

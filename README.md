@@ -1,5 +1,5 @@
 
-[![Build (linux64)](https://github.com/subreption/yara-java/actions/workflows/build_linux64.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/build_linux64.yml) [![Build (multiplatform)](https://github.com/subreption/yara-java/actions/workflows/build_multi.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/build_multi.yml) [![Build (osx64)](https://github.com/subreption/yara-java/actions/workflows/build_macos.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/build_macos.yml) [![Nightly Release (multiplatform)](https://github.com/subreption/yara-java/actions/workflows/ci_nightly.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/ci_nightly.yml) [![Stable Release multiplatform](https://github.com/subreption/yara-java/actions/workflows/ci_release.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/ci_release.yml)
+[![Build (linux64)](https://github.com/subreption/yara-java/actions/workflows/build_linux64.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/build_linux64.yml) [![Build (multiplatform)](https://github.com/subreption/yara-java/actions/workflows/build_multi.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/build_multi.yml) [![Build (osx64)](https://github.com/subreption/yara-java/actions/workflows/build_macos.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/build_macos.yml) [![Build (windows64)](https://github.com/subreption/yara-java/actions/workflows/build_windows64.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/build_windows64.yml) [![Nightly Release (multiplatform)](https://github.com/subreption/yara-java/actions/workflows/ci_nightly.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/ci_nightly.yml) [![Stable Release multiplatform](https://github.com/subreption/yara-java/actions/workflows/ci_release.yml/badge.svg)](https://github.com/subreption/yara-java/actions/workflows/ci_release.yml)
 
 ## Introduction
 
@@ -62,6 +62,22 @@ cd yara-java
 mvn clean install
 ```
 
+### Windows x64 (MSVC)
+
+On Windows, libyara is built with MSVC from the Visual Studio solution in subreption/yara. From a
+*x64 Native Tools Command Prompt* (or after running `vcvars64.bat`):
+
+```
+git clone https://github.com/subreption/yara.git
+cd yara
+git checkout tags/v4.5.2-subreption
+nuget restore windows/vs2017/yara.sln
+msbuild windows/vs2017/libyara/libyara.vcxproj /p:Configuration=Release /p:Platform=x64
+set YARA_HOME=%CD%
+```
+
+Then build yara-java as above (`mvn clean install`); the `windows-amd64` profile activates automatically.
+
 ### Building in hardened environments
 
 It is preferable, especially in hardened environments (where `/tmp` might not be executable or even
@@ -75,8 +91,13 @@ extended support.
 
 ## Releases
 
-We have added CI workflows to generate *jars* for the supported platforms upon every stable *tag* in this
-repository.
+CI workflows have been added to generate *jars* for the supported platforms (`linux64`, `osx64`, `windows64`)
+upon every stable *tag* in this repository.
+
+The `windows64` native library is built with MSVC and links the Microsoft Visual C++ runtime dynamically.
+On Windows 10/11 no action is required — the JRE provides that runtime (`vcruntime140.dll`) in its own `bin`
+directory. On older Windows (7/8) lacking the Universal C Runtime, the Visual C++ Redistributable (2015-2022)
+or the Universal C Runtime update (KB2999226) may be required.
 
 ## Using the library
 

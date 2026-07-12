@@ -1,0 +1,71 @@
+name: Build (windows64)
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+
+  build_windows64:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        jdk: [21]
+        libyara_tag: ["v4.5.2-subreption"]
+        arch: [windows64]
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up JDK
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: ${{ matrix.jdk }}
+
+      # Step 3: MSVC dev environment (exported to all later steps).
+      - name: Set up MSVC developer environment (x64)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Set up NuGet
+        uses: NuGet/setup-nuget@v2
+
+      # Step 4: Clone libyara.
+      - name: Clone libyara (${{ matrix.libyara_tag }})
+        uses: actions/checkout@v4
+        with:
+          repository: subreption/yara
+          path: yara
+          ref: ${{ matrix.libyara_tag }}
+          token: ${{ secrets.GH_YARA_REPO_PAT }}
+
+      # Step 5: Restore NuGet deps (packages.config is not auto-restored).
+      - name: Restore libyara NuGet packages
+        run: nuget restore yara/windows/vs2017/yara.sln
+
+      # Step 6: Build libyara only (JNI embedded; no yara/yarac).
+      - name: Build libyara (MSVC Release|x64)
+        run: |
+          msbuild "yara/windows/vs2017/libyara/libyara.vcxproj" /p:Configuration=Release /p:Platform=x64 /v:minimal
+          if ($LASTEXITCODE -ne 0) { throw "msbuild failed for libyara" }
+
+      - name: Export YARA_HOME
+        run: echo "YARA_HOME=${{ github.workspace }}\yara" >> $env:GITHUB_ENV
+
+      # Step 7: Build + test yara-java (windows-amd64 profile auto-activates).
+      - name: Build and test yara-java (mvn package)
+        run: mvn -B package --file pom.xml
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.arch }}-artifacts
+          path: target/*.jar
+          if-no-files-found: error

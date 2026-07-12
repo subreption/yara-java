@@ -100,6 +100,7 @@
                 <version>${hawtjni-version}</version>
                 <executions>
                     <execution>
+                        <id>build-yara-wrapper</id>
                         <phase>compile</phase>
                         <goals>
                             <goal>generate</goal>
@@ -277,6 +278,75 @@
                                 <arg>LDFLAGS=${jni-with-crypto}</arg>
                             </configureArgs>
                             <platform>linux64</platform>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>windows-amd64</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- build the JNI wrapper via MSVC -->
+                    <plugin>
+                        <groupId>org.fusesource.hawtjni</groupId>
+                        <artifactId>hawtjni-maven-plugin</artifactId>
+                        <version>${hawtjni-version}</version>
+                        <executions>
+                            <execution>
+                                <id>build-yara-wrapper</id>
+                                <configuration>
+                                    <windowsCustomProps>true</windowsCustomProps>
+                                    <windowsBuildTool>msbuild</windowsBuildTool>
+                                    <windowsPlatformToolset>v143</windowsPlatformToolset>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- JNI embedded only: bundle just yara-wrapper.dll, no yara/yarac. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>test-native</id>
+                                <configuration>
+                                    <target combine.self="override">
+                                        <echo message="Windows: embedded-only, no CLI test resources to stage"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>package-native</id>
+                                <configuration>
+                                    <target combine.self="override">
+                                        <dirset dir="${project.build.directory}/generated-sources/hawtjni/lib/META-INF/native/" id="platform">
+                                            <include name="*" />
+                                        </dirset>
+                                        <jar destfile="${project.build.directory}/${project.artifactId}-${project.version}-${toString:platform}.jar"
+                                             basedir="${project.build.directory}/generated-sources/hawtjni/lib/"
+                                             update="true"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.0.0-M5</version>
+                        <configuration>
+                            <!-- External mode needs yara/yarac, not bundled on Windows. -->
+                            <excludes>
+                                <exclude>**/external/**</exclude>
+                            </excludes>
                         </configuration>
                     </plugin>
                 </plugins>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- hawtjni custom props for the Windows/MSVC build; paths resolve from $(YARA_HOME). -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(YARA_HOME)\libyara\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <!-- MSVC x64 defines _WIN64 not _LP64, so hawtjni needs JNI64 or its jintLong stays 32-bit
+           and truncates callback pointers. -->
+      <PreprocessorDefinitions>JNI64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(YARA_HOME)\windows\vs2017\libyara\Release\libyara64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>
